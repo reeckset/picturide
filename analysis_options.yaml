@@ -1,0 +1,32 @@
+linter:
+  rules:
+    - annotate_overrides
+    - avoid_print
+    - avoid_relative_lib_imports
+    - avoid_empty_else
+    - await_only_futures
+    - camel_case_types
+    - constant_identifier_names
+    - curly_braces_in_flow_control_structures
+    - empty_statements
+    - file_names
+    - hash_and_equals
+    - implementation_imports
+    - lines_longer_than_80_chars
+    - no_duplicate_case_values
+    - non_constant_identifier_names
+    - package_names
+    - prefer_is_not_empty
+    - prefer_equal_for_default_values
+    - prefer_final_fields
+    - prefer_final_locals
+    - prefer_is_empty
+    - prefer_single_quotes
+    - recursive_getters
+    - unnecessary_new
+    - valid_regexps
+
+analyzer:
+  errors:
+    unrecognized_error_code: ignore
+    asset_directory_does_not_exist: ignore

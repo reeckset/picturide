@@ -1,0 +1,8 @@
+{
+    "version": "2.0.0",
+    "tasks": [{
+        "label": "deletePreviousBuild",
+        "command": "rm -rf build/app/intermediates",
+        "type": "shell"
+    }]
+}
