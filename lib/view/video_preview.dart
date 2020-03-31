@@ -32,17 +32,7 @@ class _VideoPreviewState extends State<VideoPreview> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children:[
-        Container(
-          height: 200,
-          child: IjkPlayer(
-            mediaController: _controller,
-          ),) ,
-      ]);
-  }
-
+  Widget build(BuildContext context) => IjkPlayer(mediaController: _controller);
 
   @override
   void dispose() {

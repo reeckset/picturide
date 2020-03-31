@@ -1,9 +1,12 @@
 import 'dart:io';
+import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/view/project_page.dart';
 
 class _MockProjectPageState extends ProjectPageState {
   @override
-  getClipFile() async => File('mockFilePath');
+  askClipFile() async => File('mockVideoPath');
+  @override
+  askAudioTrack(_) async => AudioTrack(bpm: 0, file: File('mockAudioPath'));
 }
 
 class MockProjectPage extends ProjectPage {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:picturide/view/add_audio_page.dart';
 import 'package:picturide/view/project_page.dart';
 import 'package:picturide/view/theme.dart';
 
@@ -10,7 +11,14 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: themeData,
-      home: ProjectPage(title: 'Flutter Demo Home Page'),
+     // home: ProjectPage(title: 'Flutter Demo Home Page'),
+      initialRoute: '/',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/': (context) => ProjectPage(),
+        // When navigating to the "/second" route, build the SecondScreen widget.
+        '/add_audio_page': (context) => AddAudioPage(),
+      },
     );
   }
 }

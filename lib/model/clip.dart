@@ -1,8 +1,7 @@
-import 'dart:io';
+import 'package:picturide/model/file_wrapper.dart';
 
-class Clip {
-  File file;
+class Clip extends FileWrapper {
   int tempoMultiplierDuration = 1;
 
-  Clip(this.file);
+  Clip(file):super(file);
 }
