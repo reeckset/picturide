@@ -58,7 +58,7 @@ class ProjectPageState extends State<ProjectPage> {
         child:
           Column(children: [
             Container(
-              height: 150,
+              height: MediaQuery.of(context).size.width / _projectState.getAspectRatio(),
               child:
                 _projectState.clips.isNotEmpty
                   ? VideoPreview(_projectState)
