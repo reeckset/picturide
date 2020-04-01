@@ -17,13 +17,13 @@ class AddAudioPage extends StatefulWidget {
 
 class AddAudioPageState extends State<AddAudioPage> {
   final IjkMediaController _controller = IjkMediaController();
-  File file;
+  String filepath;
   int bpm = 0;
   int beatCount = 0;
   int firstTimestamp = 0;
   bool unsuccessfulFileSelection = false;
 
-  getAudioFile() async => FilePicker.getFile(type: FileType.audio);
+  getAudioFile() async => (await FilePicker.getFile(type: FileType.audio)).path;
 
   _registerTap(){
     final beatCount = this.beatCount+1;
@@ -49,15 +49,15 @@ class AddAudioPageState extends State<AddAudioPage> {
 
   _submit(context){
     _controller.stop();
-    Navigator.pop(context, AudioTrack(file: this.file, bpm: this.bpm));
+    Navigator.pop(context, AudioTrack(file: this.filepath, bpm: this.bpm));
   }
 
   @override
   void initState() {
     super.initState();
-    getAudioFile().then((file){
-      _controller.setNetworkDataSource(file.path, autoPlay: true);
-      this.setState((){ this.file = file; });
+    getAudioFile().then((filepath){
+      _controller.setNetworkDataSource(filepath, autoPlay: true);
+      this.setState((){ this.filepath = filepath; });
     }).catchError((_){
       this.setState((){
         this.unsuccessfulFileSelection = true;
@@ -77,13 +77,13 @@ class AddAudioPageState extends State<AddAudioPage> {
       },
       child: Scaffold(
         appBar: AppBar(title: Text('Add Audio File')),
-        body: this.file != null ? Column(children: [
+        body: this.filepath != null ? Column(children: [
               Container(
                 height: 50,
                 child: IjkPlayer(
                   mediaController: _controller,
                 ),),
-              Text(basename(file?.path)),
+              Text(basename(filepath)),
               Container(
                 padding: EdgeInsets.all(10.0),
                 child: 

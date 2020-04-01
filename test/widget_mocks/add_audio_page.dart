@@ -3,7 +3,7 @@ import 'package:picturide/view/add_audio_page.dart';
 
 class _MockAddAudioPageState extends AddAudioPageState {
   @override
-  getAudioFile() async => File('mockAudioPath');
+  getAudioFile() async => 'mockAudioPath';
 }
 
 class MockAddAudioPage extends AddAudioPage {

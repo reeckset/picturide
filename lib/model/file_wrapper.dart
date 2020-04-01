@@ -1,7 +1,5 @@
-import 'dart:io';
-
 class FileWrapper {
-  File file;
+  String filepath;
 
-  FileWrapper(this.file);
+  FileWrapper(this.filepath);
 }

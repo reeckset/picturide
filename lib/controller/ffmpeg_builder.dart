@@ -17,12 +17,12 @@ buildFFMPEGArgs(Project project){
   for(int i = 0; i < project.clips.length; i++){
     final Clip clip = project.clips[i];
     inputArgs.add('-i');
-    inputArgs.add(clip.file.path);
+    inputArgs.add(clip.filepath);
     filterComplexMapping += _getClipFilterComplex(i, clip, project);
   }
 
   inputArgs.add('-i');
-  inputArgs.add(project.audioTracks[0].file.path);
+  inputArgs.add(project.audioTracks[0].filepath);
 
   final String filterComplex =
     filterComplexMapping

@@ -25,13 +25,13 @@ class ProjectPageState extends State<ProjectPage> {
   final Project _projectState = Project();
   EditingMode editingMode = EditingMode.video;
 
-  askClipFile() async => FilePicker.getFile(type: FileType.video);
+  askClipFile() async => (await FilePicker.getFile(type: FileType.video)).path;
 
   askAudioTrack(context) async => Navigator.pushNamed(context, '/add_audio_page');
 
   _addVideoClip() {
     askClipFile().then((clipFile) {
-      if(clipFile is File){
+      if(clipFile is String){
         setState(() { _projectState.clips.add(Clip(clipFile));});
       }
     });
@@ -87,7 +87,7 @@ class ProjectPageState extends State<ProjectPage> {
                 (FileWrapper clipOrAudio) => 
                   Container(
                     padding: EdgeInsets.all(10.0),
-                    child: Text(basename(clipOrAudio.file.path))
+                    child: Text(basename(clipOrAudio.filepath))
                   )
             ).toList()
           )
