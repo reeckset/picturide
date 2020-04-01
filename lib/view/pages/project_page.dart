@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -8,22 +6,25 @@ import 'package:picturide/model/file_wrapper.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/view/theme.dart';
-import 'package:picturide/view/video_preview.dart';
+import 'package:picturide/view/widgets/video_preview.dart';
+import 'package:picturide/view/widgets/save_project_button.dart';
 
 enum EditingMode { audio, video }
 
 class ProjectPage extends StatefulWidget {
-  ProjectPage({Key key, this.title}) : super(key: key);
+  ProjectPage({Key key, this.project}) : super(key: key);
 
-  final String title;
+  final Project project;
 
   @override
-  ProjectPageState createState() => ProjectPageState();
+  ProjectPageState createState() => ProjectPageState(project);
 }
 
 class ProjectPageState extends State<ProjectPage> {
-  final Project _projectState = Project.create();
+  final Project _projectState;
   EditingMode editingMode = EditingMode.video;
+
+  ProjectPageState(this._projectState);
 
   askClipFile() async => (await FilePicker.getFile(type: FileType.video)).path;
 
@@ -65,6 +66,7 @@ class ProjectPageState extends State<ProjectPage> {
                   ? VideoPreview(_projectState)
                   : Center(child: Text('Add a video!')),
             ),
+            SaveProjectButton(_projectState),
             _editingModeSelector(),
             _isEditingAudio() ? _sourceFilesExplorer(_projectState.audioTracks)
             : _sourceFilesExplorer(_projectState.clips)

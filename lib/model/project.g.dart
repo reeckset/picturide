@@ -8,6 +8,7 @@ part of 'project.dart';
 
 Project _$ProjectFromJson(Map<String, dynamic> json) {
   return Project(
+    filepath: json['filepath'] as String,
     clips: (json['clips'] as List)
         ?.map(
             (e) => e == null ? null : Clip.fromJson(e as Map<String, dynamic>))
@@ -26,4 +27,5 @@ Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
       'clips': instance.clips,
       'audioTracks': instance.audioTracks,
       'outputResolution': instance.outputResolution,
+      'filepath': instance.filepath,
     };
