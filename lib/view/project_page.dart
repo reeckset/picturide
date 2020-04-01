@@ -52,13 +52,14 @@ class ProjectPageState extends State<ProjectPage> {
 
   @override
   Widget build(BuildContext context) {
+    final MediaQueryData mediaQuery = MediaQuery.of(context);
     return Scaffold(
       body: Container(
         padding: EdgeInsets.only(top: 10.0),
         child:
           Column(children: [
             Container(
-              height: MediaQuery.of(context).size.width / _projectState.getAspectRatio(),
+              height: mediaQuery.size.width / _projectState.getAspectRatio(),
               child:
                 _projectState.clips.isNotEmpty
                   ? VideoPreview(_projectState)

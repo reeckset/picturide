@@ -70,38 +70,44 @@ class AddAudioPageState extends State<AddAudioPage> {
     if(unsuccessfulFileSelection){
       Navigator.pop(context);
     }
-    return Scaffold(
-      appBar: AppBar(title: Text('Add Audio File')),
-      body: this.file != null ? Column(children: [
-             Container(
-              height: 50,
-              child: IjkPlayer(
-                mediaController: _controller,
-              ),),
-            Text(basename(file?.path)),
-            Container(
-              padding: EdgeInsets.all(10.0),
-              child: 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    RaisedButton(
-                      child: Text('Tap to the tempo'),
-                      onPressed: _registerTap,
-                    ),
-                    Text('BPM: $bpm'),
-                    IconButton(
-                      icon: Icon(Icons.replay),
-                      onPressed: _resetBPM,
-                    )
-                  ],
-                )
-            ),
-            RaisedButton(
-              child: Text('Add this song!'),
-              onPressed: () => _submit(context),
-            )
-      ]) : Text('Waiting for audio file...'),
+    return WillPopScope(
+      onWillPop: () async {
+        _controller.stop();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text('Add Audio File')),
+        body: this.file != null ? Column(children: [
+              Container(
+                height: 50,
+                child: IjkPlayer(
+                  mediaController: _controller,
+                ),),
+              Text(basename(file?.path)),
+              Container(
+                padding: EdgeInsets.all(10.0),
+                child: 
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      RaisedButton(
+                        child: Text('Tap to the tempo'),
+                        onPressed: _registerTap,
+                      ),
+                      Text('BPM: $bpm'),
+                      IconButton(
+                        icon: Icon(Icons.replay),
+                        onPressed: _resetBPM,
+                      )
+                    ],
+                  )
+              ),
+              RaisedButton(
+                child: Text('Add this song!'),
+                onPressed: () => _submit(context),
+              )
+        ]) : Text('Waiting for audio file...'),
+      )
     );
   }
 }

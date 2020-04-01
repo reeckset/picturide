@@ -41,18 +41,18 @@ void main() {
       findsNothing
     );
 
-    // Tap the '+' icon 5 times and trigger a frame.
-    for(int i = 0; i < 5; i++){
+    // Tap the '+' icon 2 times and trigger a frame.
+    for(int i = 0; i < 2; i++){
       await tester.tap(find.byIcon(Icons.local_movies));
     }
     await tester.pump();
 
-    //There should be a listview with 5 files' paths
+    //There should be a listview with 2 files' paths
     expect(find.byWidgetPredicate(
-      (Widget widget) => widget is ListView && widget.semanticChildCount == 5),
+      (Widget widget) => widget is ListView && widget.semanticChildCount == 2),
       findsOneWidget
     );
-    expect(find.text(basename(File('mockVideoPath').path)), findsNWidgets(5));
+    expect(find.text(basename(File('mockVideoPath').path)), findsNWidgets(2));
   });
 
   testWidgets('Tracks list adds selected track', (WidgetTester tester) async {
@@ -71,17 +71,17 @@ void main() {
       findsNothing
     );
 
-    // Tap the '+' icon 5 times and trigger a frame.
-    for(int i = 0; i < 5; i++){
+    // Tap the '+' icon 2 times and trigger a frame.
+    for(int i = 0; i < 2; i++){
       await tester.tap(find.byIcon(Icons.music_note));
     }
     await tester.pump();
 
-    //There should be a listview with 5 files' paths
+    //There should be a listview with 2 files' paths
     expect(find.byWidgetPredicate(
-      (Widget widget) => widget is ListView && widget.semanticChildCount == 5),
+      (Widget widget) => widget is ListView && widget.semanticChildCount == 2),
       findsOneWidget
     );
-    expect(find.text(basename(File('mockAudioPath').path)), findsNWidgets(5));
+    expect(find.text(basename(File('mockAudioPath').path)), findsNWidgets(2));
   });
 }
