@@ -1,11 +1,13 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import 'package:picturide/controller/project_storage.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/file_wrapper.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/view/theme.dart';
+import 'package:picturide/view/widgets/ask_options.dart';
 import 'package:picturide/view/widgets/video_preview.dart';
 import 'package:picturide/view/widgets/save_project_button.dart';
 
@@ -51,33 +53,52 @@ class ProjectPageState extends State<ProjectPage> {
 
   _isEditingAudio() => editingMode == EditingMode.audio;
 
+  _confirmWantsToLeave(context) async {
+    final int option = await askOptions(
+      'You are leaving this project',
+      'Do you want to save?',
+      ['Cancel', 'No', 'Yes'],
+      context
+    );
+    if(option == 0) return false;
+    if(option == 2) await saveProject(widget.project);
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final MediaQueryData mediaQuery = MediaQuery.of(context);
-    return Scaffold(
-      body: Container(
-        padding: EdgeInsets.only(top: 10.0),
-        child:
-          Column(children: [
-            Container(
-              height: mediaQuery.size.width / _projectState.getAspectRatio(),
-              child:
-                _projectState.clips.isNotEmpty
-                  ? VideoPreview(_projectState)
-                  : Center(child: Text('Add a video!')),
-            ),
-            SaveProjectButton(_projectState),
-            _editingModeSelector(),
-            _isEditingAudio() ? _sourceFilesExplorer(_projectState.audioTracks)
-            : _sourceFilesExplorer(_projectState.clips)
-          ]),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _isEditingAudio()
-          ? _addAudioTrack(context) : _addVideoClip(),
-        tooltip: 'Add ${_isEditingAudio() ? 'audio track' : 'video clip' }',
-        child: Icon(_isEditingAudio() ? Icons.music_note : Icons.local_movies ),
-      ),
+    
+    return WillPopScope(
+      onWillPop: () async => await _confirmWantsToLeave(context),
+      child: Scaffold(
+        body: Container(
+          padding: EdgeInsets.only(top: 10.0),
+          child:
+            Column(children: [
+              Container(
+                height: mediaQuery.size.width / _projectState.getAspectRatio(),
+                child:
+                  _projectState.clips.isNotEmpty
+                    ? VideoPreview(_projectState)
+                    : Center(child: Text('Add a video!')),
+              ),
+              SaveProjectButton(_projectState),
+              _editingModeSelector(),
+              _isEditingAudio()
+              ? _sourceFilesExplorer(_projectState.audioTracks)
+              : _sourceFilesExplorer(_projectState.clips)
+            ]),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _isEditingAudio()
+            ? _addAudioTrack(context) : _addVideoClip(),
+          tooltip: 'Add ${_isEditingAudio() ? 'audio track' : 'video clip' }',
+          child: Icon(
+            _isEditingAudio() ? Icons.music_note : Icons.local_movies
+          ),
+        ),
+      )
     );
   }
 

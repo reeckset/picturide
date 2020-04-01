@@ -27,6 +27,8 @@ void main() {
 
       await tester.pump();
 
+      debugDumpApp();
+
       expect(find.text('Editing: video'), findsNothing);
       expect(find.byIcon(Icons.local_movies), findsNothing);
       expect(find.text('Editing: audio'), findsOneWidget);
@@ -35,7 +37,7 @@ void main() {
 
   testWidgets('Clips list adds selected clip', (WidgetTester tester) async {
 
-    final MockProjectPage projectPage = MockProjectPage();
+    final MockProjectPage projectPage = MockProjectPage(project: testProject);
 
     await tester.pumpWidget(makeTestableWidget(projectPage));
 

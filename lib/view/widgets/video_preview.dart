@@ -4,6 +4,7 @@ import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:picturide/controller/ffmpeg_builder.dart';
 import 'package:picturide/model/project.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
+import 'package:picturide/view/widgets/inform_dialog.dart';
 
 class VideoPreview extends StatefulWidget {
   final Project project;
@@ -78,24 +79,10 @@ class _VideoPreviewState extends State<VideoPreview> {
   }
 
   Future<void> _showNoSoundAlert() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Missing audio'),
-          content: Text('Please add at least one audio file'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+    return informDialog(
+      'Missing audio',
+      'Please add at least one audio file',
+    context);
   }
 
   @override

@@ -46,6 +46,13 @@ class AppPreferencesController {
     return _createAppPreferences();
   }
 
+  static deleteProject(String filepath) async {
+    final AppPreferences preferences = await _getAppPreferences();
+    await File(filepath).delete();
+    preferences.projectPaths.remove(filepath);
+    _saveAppPreferences(preferences);
+  }
+
   static Future<AppPreferences> _createAppPreferences() async {
     final path = await _getPreferencesPath();
     final AppPreferences preferences = AppPreferences.create();
