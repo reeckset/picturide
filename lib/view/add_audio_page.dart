@@ -49,7 +49,7 @@ class AddAudioPageState extends State<AddAudioPage> {
 
   _submit(context){
     _controller.stop();
-    Navigator.pop(context, AudioTrack(file: this.filepath, bpm: this.bpm));
+    Navigator.pop(context, AudioTrack(filePath: this.filepath, bpm: this.bpm));
   }
 
   @override

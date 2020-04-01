@@ -22,7 +22,7 @@ class ProjectPage extends StatefulWidget {
 }
 
 class ProjectPageState extends State<ProjectPage> {
-  final Project _projectState = Project();
+  final Project _projectState = Project.create();
   EditingMode editingMode = EditingMode.video;
 
   askClipFile() async => (await FilePicker.getFile(type: FileType.video)).path;
@@ -87,7 +87,7 @@ class ProjectPageState extends State<ProjectPage> {
                 (FileWrapper clipOrAudio) => 
                   Container(
                     padding: EdgeInsets.all(10.0),
-                    child: Text(basename(clipOrAudio.filepath))
+                    child: Text(basename(clipOrAudio.getFilePath()))
                   )
             ).toList()
           )

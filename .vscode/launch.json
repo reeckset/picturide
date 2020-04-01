@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Dart",
-            "preLaunchTask": "deletePreviousBuild",
+            "preLaunchTask": "preLaunchTasks",
             "program": "lib/main.dart",
             "request": "launch",
             "type": "dart"

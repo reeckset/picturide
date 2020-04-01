@@ -4,5 +4,11 @@
         "label": "deletePreviousBuild",
         "command": "rm -rf build/app/intermediates",
         "type": "shell"
+    },
+    {
+        "label": "preLaunchTasks",
+        "dependsOn": [
+            "deletePreviousBuild",
+        ]
     }]
 }

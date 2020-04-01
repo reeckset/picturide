@@ -1,5 +1,3 @@
-class FileWrapper {
-  String filepath;
-
-  FileWrapper(this.filepath);
+abstract class FileWrapper {
+  String getFilePath();
 }
