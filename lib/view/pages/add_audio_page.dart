@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
@@ -49,7 +47,7 @@ class AddAudioPageState extends State<AddAudioPage> {
 
   _submit(context){
     _controller.stop();
-    Navigator.pop(context, AudioTrack(file: this.filepath, bpm: this.bpm));
+    Navigator.pop(context, AudioTrack(filePath: this.filepath, bpm: this.bpm));
   }
 
   @override

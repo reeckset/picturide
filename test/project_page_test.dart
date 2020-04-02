@@ -2,14 +2,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
+import 'package:picturide/model/project.dart';
 import 'make_testable_widget.dart';
 import 'widget_mocks/project_page.dart';
 
 void main() {
 
+  final testProject = Project.create('Name');
+
   testWidgets('Editing Mode switch toggles between audio and video',
     (WidgetTester tester) async {
-      final MockProjectPage projectPage = MockProjectPage();
+      final MockProjectPage projectPage = MockProjectPage(project: testProject);
 
       await tester.pumpWidget(makeTestableWidget(projectPage));
 
@@ -24,6 +27,8 @@ void main() {
 
       await tester.pump();
 
+      debugDumpApp();
+
       expect(find.text('Editing: video'), findsNothing);
       expect(find.byIcon(Icons.local_movies), findsNothing);
       expect(find.text('Editing: audio'), findsOneWidget);
@@ -32,7 +37,7 @@ void main() {
 
   testWidgets('Clips list adds selected clip', (WidgetTester tester) async {
 
-    final MockProjectPage projectPage = MockProjectPage();
+    final MockProjectPage projectPage = MockProjectPage(project: testProject);
 
     await tester.pumpWidget(makeTestableWidget(projectPage));
 
@@ -57,7 +62,7 @@ void main() {
 
   testWidgets('Tracks list adds selected track', (WidgetTester tester) async {
 
-    final MockProjectPage projectPage = MockProjectPage();
+    final MockProjectPage projectPage = MockProjectPage(project: testProject);
 
     await tester.pumpWidget(makeTestableWidget(projectPage));
 
