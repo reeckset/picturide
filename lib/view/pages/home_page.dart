@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:picturide/controller/app_preferences_controller.dart';
-import 'package:picturide/controller/project_storage.dart';
 import 'package:picturide/model/project.dart';
+import 'package:picturide/redux/actions/history_actions.dart';
+import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/view/pages/project_page.dart';
 import 'package:picturide/view/widgets/ask_confirm.dart';
 import 'package:picturide/view/widgets/ask_text_input.dart';
@@ -32,7 +34,7 @@ class HomePageState extends State<HomePage> {
   _createNewProject() async {
     final String projectName = await askTextInput('New Project Name:', context);
     final Project project = 
-    await AppPreferencesController.createProject(projectName);
+      await AppPreferencesController.createProject(projectName);
     this.setState((){
       this.projectPaths.putIfAbsent(project.filepath, () => projectName);
     });
@@ -40,9 +42,10 @@ class HomePageState extends State<HomePage> {
   }
 
   _openProject(String projectPath) async {
-    final Project project = await getProject(projectPath);
+    StoreProvider.of<AppState>(context)
+      .dispatch(setActiveProjectActionCreator(projectPath));
     Navigator.push(context, MaterialPageRoute(
-      builder: (context) => ProjectPage(project: project)));
+      builder: (context) => ProjectPage()));
   }
 
   _deleteProject(String projectPath, context) async {

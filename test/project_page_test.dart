@@ -3,31 +3,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/project.dart';
+import 'package:picturide/redux/state/app_state.dart';
+import 'package:picturide/redux/state/history_state.dart';
 import 'make_testable_widget.dart';
+import 'make_testable_widget_redux.dart';
 import 'widget_mocks/project_page.dart';
 
 void main() {
 
   final testProject = Project.create('Name');
 
+  createInitialAppState() =>
+    AppState(history: HistoryState(
+      project: testProject,
+      undoActions: [], redoActions: [],
+      savingStatus: SavingStatus.saved
+    ));
+
   testWidgets('Editing Mode switch toggles between audio and video',
     (WidgetTester tester) async {
-      final MockProjectPage projectPage = MockProjectPage(project: testProject);
+      final MockProjectPage projectPage = MockProjectPage();
 
-      await tester.pumpWidget(makeTestableWidget(projectPage));
+      await tester.pumpWidget(
+        makeTestableWidgetRedux(
+          projectPage, 
+          initialState: createInitialAppState()
+        )
+      );
 
       expect(find.text('Editing: video'), findsOneWidget);
       expect(find.byIcon(Icons.local_movies), findsOneWidget);
       expect(find.text('Editing: audio'), findsNothing);
       expect(find.byIcon(Icons.music_note), findsNothing);
-
-      await tester.tap(
-        find.byWidgetPredicate((Widget widget) => widget is Switch)
+      
+      expect(
+        find.byWidgetPredicate((Widget widget) => widget is Switch),
+        findsOneWidget
       );
 
-      await tester.pump();
+      final Switch switchWidget = find.byWidgetPredicate(
+          (Widget widget) => widget is Switch
+        ).evaluate().first.widget;
 
-      debugDumpApp();
+      switchWidget.onChanged(true);
+
+      await tester.pump();
 
       expect(find.text('Editing: video'), findsNothing);
       expect(find.byIcon(Icons.local_movies), findsNothing);
@@ -37,9 +57,17 @@ void main() {
 
   testWidgets('Clips list adds selected clip', (WidgetTester tester) async {
 
-    final MockProjectPage projectPage = MockProjectPage(project: testProject);
+    tester.binding.window.physicalSizeTestValue = Size(1080, 1920);
+    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
-    await tester.pumpWidget(makeTestableWidget(projectPage));
+    final MockProjectPage projectPage = MockProjectPage();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        projectPage, 
+        initialState: createInitialAppState()
+      )
+    );
 
     expect(find.byWidgetPredicate(
       (Widget widget) => widget is ListView && widget.semanticChildCount > 0),
@@ -62,9 +90,17 @@ void main() {
 
   testWidgets('Tracks list adds selected track', (WidgetTester tester) async {
 
-    final MockProjectPage projectPage = MockProjectPage(project: testProject);
+    tester.binding.window.physicalSizeTestValue = Size(1080, 1920);
+    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
 
-    await tester.pumpWidget(makeTestableWidget(projectPage));
+    final MockProjectPage projectPage = MockProjectPage();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        projectPage, 
+        initialState: createInitialAppState()
+      )
+    );
 
     await tester.tap(
       find.byWidgetPredicate((Widget widget) => widget is Switch)

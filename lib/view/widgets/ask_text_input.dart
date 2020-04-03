@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 askTextInput(String msg, BuildContext context) async {
-  TextEditingController controller = TextEditingController();
+  final TextEditingController controller = TextEditingController();
   await showDialog(
       context: context,
       builder: (BuildContext context) => 

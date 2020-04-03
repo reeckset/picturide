@@ -15,7 +15,14 @@ class Project {
   Project.create(this.filepath){
     this.clips = List<Clip>();
     this.audioTracks = List<AudioTrack>();
-    this.outputResolution = {'w':640, 'h':360};
+    this.outputResolution = {'w':256, 'h':144};
+  }
+
+  Project.fromProject(Project p){
+    clips = p.clips;
+    audioTracks = p.audioTracks;
+    outputResolution = p.outputResolution;
+    filepath = p.filepath;
   }
 
   getAspectRatio() => outputResolution['w'] / outputResolution['h'];
