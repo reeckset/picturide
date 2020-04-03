@@ -102,7 +102,7 @@ class AddAudioPageState extends State<AddAudioPage> {
               ),
               RaisedButton(
                 child: Text('Add this song!'),
-                onPressed: () => _submit(context),
+                onPressed: bpm == 0 ? null : () => _submit(context),
               )
         ]) : Text('Waiting for audio file...'),
       )

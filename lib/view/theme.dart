@@ -10,5 +10,5 @@ ThemeData themeData = ThemeData(
   primaryColorDark: primaryColor,
   accentColor: accentColor,
   canvasColor: backgroundColor,
-  buttonColor: accentColor
+  buttonColor: accentColor,
 );
