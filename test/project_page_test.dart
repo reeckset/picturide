@@ -1,15 +1,21 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
-import 'make_testable_widget.dart';
-import 'make_testable_widget_redux.dart';
+import 'utilities/utilities.dart';
 import 'widget_mocks/project_page.dart';
 
 void main() {
+
+  setUp(() {
+    WidgetsBinding.instance.renderView.configuration = TestViewConfiguration(
+        size: const Size(1080, 1920)
+    );
+  });
 
   final testProject = Project.create('Name');
 
@@ -22,6 +28,7 @@ void main() {
 
   testWidgets('Editing Mode switch toggles between audio and video',
     (WidgetTester tester) async {
+
       final MockProjectPage projectPage = MockProjectPage();
 
       await tester.pumpWidget(
@@ -41,12 +48,10 @@ void main() {
         findsOneWidget
       );
 
-      final Switch switchWidget = find.byWidgetPredicate(
-          (Widget widget) => widget is Switch
-        ).evaluate().first.widget;
-
-      switchWidget.onChanged(true);
-
+      
+      await tester.tap(
+        find.byWidgetPredicate((Widget widget) => widget is Switch)
+      );
       await tester.pump();
 
       expect(find.text('Editing: video'), findsNothing);
@@ -55,10 +60,8 @@ void main() {
       expect(find.byIcon(Icons.music_note), findsOneWidget);
   });
 
-  testWidgets('Clips list adds selected clip', (WidgetTester tester) async {
-
-    tester.binding.window.physicalSizeTestValue = Size(1080, 1920);
-    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+  testWidgets('Clips list adds selected clip',
+    (WidgetTester tester) async {
 
     final MockProjectPage projectPage = MockProjectPage();
 
@@ -88,10 +91,8 @@ void main() {
     expect(find.text(basename(File('mockVideoPath').path)), findsNWidgets(2));
   });
 
-  testWidgets('Tracks list adds selected track', (WidgetTester tester) async {
-
-    tester.binding.window.physicalSizeTestValue = Size(1080, 1920);
-    addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
+  testWidgets('Tracks list adds selected track',
+    (WidgetTester tester) async {
 
     final MockProjectPage projectPage = MockProjectPage();
 

@@ -5,8 +5,6 @@ import 'package:picturide/redux/state/app_state.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
-import 'make_testable_widget.dart';
-
 Widget makeTestableWidgetRedux(child, {AppState initialState}){
   if(initialState == null) initialState = AppState.create();
 
@@ -21,4 +19,8 @@ Widget makeTestableWidgetRedux(child, {AppState initialState}){
         makeTestableWidget(child)
       )
     );
+}
+
+Widget makeTestableWidget(child){
+  return MaterialApp(home: child);
 }
