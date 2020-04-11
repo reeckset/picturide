@@ -1,18 +1,11 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:path/path.dart';
-import 'package:picturide/model/audio_track.dart';
-import 'package:picturide/model/file_wrapper.dart';
 import 'package:picturide/model/project.dart';
-import 'package:picturide/model/clip.dart';
 import 'package:picturide/redux/actions/history_actions.dart';
-import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
-import 'package:picturide/redux/actions/project_actions/sound_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
-import 'package:picturide/view/theme.dart';
 import 'package:picturide/view/widgets/ask_options.dart';
+import 'package:picturide/view/widgets/project_page/editing_timelines.dart';
 import 'package:picturide/view/widgets/project_page/editing_toolbar.dart';
 import 'package:picturide/view/widgets/video_preview.dart';
 
@@ -25,54 +18,7 @@ class ProjectPage extends StatefulWidget {
   ProjectPageState createState() => ProjectPageState();
 }
 
-class ProjectPageState extends State<ProjectPage> 
-  with SingleTickerProviderStateMixin {
-  EditingMode editingMode = EditingMode.video;
-
-  TabController _editingModeTabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _editingModeTabController = TabController(vsync: this, length: 2);
-    _editingModeTabController.addListener(_onEditingModeSelect);
-  }
-
-  _onEditingModeSelect(){
-    setState(() {
-      this.editingMode = (
-        _editingModeTabController.index == 0
-        ? EditingMode.video : EditingMode.audio
-      );
-    });
-  }
-
-  askClipFile() async => (await FilePicker.getFile(type: FileType.video)).path;
-
-  askAudioTrack(context) async => Navigator.pushNamed(context, '/add_audio_page');
-
-  _addVideoClip(context) {
-    askClipFile().then((clipFile) {
-      if(clipFile is String){
-        StoreProvider.of<AppState>(context).dispatch(
-          AddClipAction(Clip(clipFile))
-        );
-      }
-    });
-  }
-
-  _addAudioTrack(context){
-    askAudioTrack(context)
-      .then((track){
-        if(track is AudioTrack) {
-          StoreProvider.of<AppState>(context).dispatch(
-            AddAudioAction(track)
-          );
-        }
-      });
-  }
-
-  _isEditingAudio() => editingMode == EditingMode.audio;
+class ProjectPageState extends State<ProjectPage> {
 
   _confirmWantsToLeave(context) async {
     if(StoreProvider.of<AppState>(context)
@@ -123,62 +69,11 @@ class ProjectPageState extends State<ProjectPage>
                       : Center(child: Text('Add a video!')),
                 ),
                 EditingToolbar(),
-                _timelineViews(project),
+                EditingTimelines(),
               ]),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _isEditingAudio()
-            ? _addAudioTrack(context) : _addVideoClip(context),
-          tooltip: 'Add ${_isEditingAudio() ? 'audio track' : 'video clip' }',
-          child: Icon(
-            _isEditingAudio() ? Icons.music_note : Icons.local_movies
-          ),
         ),
       );
   }
 
-  Widget _sourceFilesExplorer(List<FileWrapper> files) =>
-    ListView(
-      padding: EdgeInsets.all(10.0),
-      children: files.map(
-          (FileWrapper clipOrAudio) => 
-            Container(
-              padding: EdgeInsets.all(10.0),
-              child: Text(basename(clipOrAudio.getFilePath()))
-            )
-      ).toList()
-    );
-
-  Widget _timelineViews(Project project) => 
-    Expanded(child: Column(
-      children: [
-        Container(
-          color: lightBackgroundColor,
-          child: TabBar(
-            labelPadding: EdgeInsets.symmetric(vertical: 5.0),
-            controller: _editingModeTabController,
-            tabs: [
-              _timelineTab('Video', Icons.local_movies),
-              _timelineTab('Audio', Icons.music_note),
-            ],  
-          ),
-        ),
-        Expanded(child: TabBarView(
-          controller: _editingModeTabController,
-          children: [
-            _sourceFilesExplorer(project.clips),
-            _sourceFilesExplorer(project.audioTracks),
-          ]
-        ))
-      ])
-    );
   
-  Widget _timelineTab(String title, IconData icon) =>
-    Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(title),
-        Icon(icon)
-      ]
-    );
 }

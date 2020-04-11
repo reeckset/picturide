@@ -18,12 +18,12 @@ void main() {
     // Tap the button 2 times in 30bpm.
     await tester.tap(find.text('Tap to the tempo'));
     await tester.pump();
-    sleep(const Duration(seconds:2));
+    sleep(const Duration(seconds:4));
     await tester.tap(find.text('Tap to the tempo'));
     await tester.pump();
 
     // Bpm should now be 240
     expect(find.text('BPM: 0'), findsNothing);
-    expect(find.text('BPM: 30'), findsOneWidget);
+    expect(find.text('BPM: 15'), findsOneWidget);
   });
 }
