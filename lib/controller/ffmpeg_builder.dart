@@ -44,9 +44,9 @@ _getClipFilterComplex(int i, Clip clip, Project project){
     scale=${project.outputResolution['w']}:${project.outputResolution['h']}
     :force_original_aspect_ratio=decrease,setsar=1,
     pad=${project.outputResolution['w']}:${project.outputResolution['h']}:(ow-iw)/2:(oh-ih)/2,
-    trim=start=0:end=${60.0/project.audioTracks[0].bpm*2},setpts=PTS-STARTPTS
+    trim=start=0:end=${60.0/project.audioTracks[0].bpm*clip.getTempoDurationMultiplier()},setpts=PTS-STARTPTS
     [v$i];
-    [$i:a]atrim=0:${60.0/project.audioTracks[0].bpm*2}[a$i];""";
+    [$i:a]atrim=0:${60.0/project.audioTracks[0].bpm*clip.getTempoDurationMultiplier()}[a$i];""";
 }
 
 String _getFilterComplexMappingConcat(int numberOfClips){

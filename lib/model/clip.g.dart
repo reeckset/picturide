@@ -9,10 +9,10 @@ part of 'clip.dart';
 Clip _$ClipFromJson(Map<String, dynamic> json) {
   return Clip(
     json['filePath'] as String,
-  )..tempoMultiplierDuration = json['tempoMultiplierDuration'] as int;
+  )..tempoDurationPower = json['tempoDurationPower'] as int;
 }
 
 Map<String, dynamic> _$ClipToJson(Clip instance) => <String, dynamic>{
-      'tempoMultiplierDuration': instance.tempoMultiplierDuration,
+      'tempoDurationPower': instance.tempoDurationPower,
       'filePath': instance.filePath,
     };

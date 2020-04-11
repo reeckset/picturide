@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:mockito/mockito.dart';
 import 'package:picturide/redux/reducers/app_reducer.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
-Widget makeTestableWidgetRedux(child, {AppState initialState}){
+class MockNavigatorObserver extends Mock implements NavigatorObserver {}
+
+Widget makeTestableWidgetRedux(
+  child,
+  {AppState initialState, MockNavigatorObserver navigatorObserver}
+){
   if(initialState == null) initialState = AppState.create();
 
   final store = Store<AppState>(
@@ -15,12 +21,19 @@ Widget makeTestableWidgetRedux(child, {AppState initialState}){
 
   return 
     StoreProvider(store: store, child: 
-      MaterialApp(home: 
-        makeTestableWidget(child)
-      )
+      makeTestableWidget(child, navigatorObserver: navigatorObserver)
     );
 }
 
-Widget makeTestableWidget(child){
-  return MaterialApp(home: child);
+Widget makeTestableWidget(child, {MockNavigatorObserver navigatorObserver}){
+  return MaterialApp(
+    home: child,
+    navigatorObservers: navigatorObserver != null ? [navigatorObserver] : [],
+    onGenerateRoute: (RouteSettings routeSettings) => 
+      MaterialPageRoute(
+        builder: (context) {
+          return Scaffold(body: Text('mock-page'));
+        }
+      ),
+  );
 }
