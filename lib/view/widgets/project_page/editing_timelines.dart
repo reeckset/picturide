@@ -9,7 +9,9 @@ import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
 import 'package:picturide/redux/actions/project_actions/sound_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
+import 'package:picturide/view/pages/edit_clip_page.dart';
 import 'package:picturide/view/theme.dart';
+import 'package:picturide/view/widgets/project_page/clip_tile.dart';
 
 class EditingTimelines extends StatefulWidget { 
   @override
@@ -18,23 +20,25 @@ class EditingTimelines extends StatefulWidget {
 
 class _EditingTimelinesState extends State<EditingTimelines> {
 
-  _incrementClipTempo(context, clipIndex){
-    StoreProvider.of<AppState>(context)
-      .dispatch(IncrementClipTempoAction(clipIndex));
-  }
+  _getVideoFile() async =>
+    (await FilePicker.getFile(type: FileType.video)).path;
 
-  _askClipFile() async => (await FilePicker.getFile(type: FileType.video)).path;
+  _editClip(context, clip) async =>
+    await Navigator.of(context)
+    .push(MaterialPageRoute(builder: (c) => EditClipPage(clip)));
 
   _askAudioTrack(context) async => Navigator.pushNamed(context, '/add_audio_page');
 
   _addVideoClip(context) {
-    _askClipFile().then((clipFile) {
-      if(clipFile is String){
-        StoreProvider.of<AppState>(context).dispatch(
-          AddClipAction(Clip(clipFile))
-        );
-      }
-    });
+    _getVideoFile().then((path) =>
+      _editClip(context, Clip(filePath: path)).then((clip) {
+        if(clip is Clip){
+          StoreProvider.of<AppState>(context).dispatch(
+            AddClipAction(clip)
+          );
+        }
+      })
+    ).catchError((){});
   }
 
   _addAudioTrack(context){
@@ -119,31 +123,18 @@ class _EditingTimelinesState extends State<EditingTimelines> {
     );
   }
 
-  Widget _clipTileBuilder(Clip clip, int index, context) {
-
-    return ListTile(
-      contentPadding: EdgeInsets.only(left: 10.0),
-      title: Text(basename(clip.filePath)),
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          ButtonTheme(
-            minWidth: 36.0,
-            height: 36.0,
-            child: OutlineButton(
-              child: Text(clip.getTempoDurationText()),
-              padding: EdgeInsets.zero,
-              onPressed: () => _incrementClipTempo(context, index)
-            )
-          ),
-          IconButton(icon: Icon(Icons.more_vert), onPressed: (){}),
-      ]),
-      dense: true,
-    );
+  Widget _clipTileBuilder(Clip clip, int index, _) {
+    return ClipTile(clip, index);
   }
 
   Widget _audioTrackTileBuilder(AudioTrack audioTrack, int index, context) {
     return ListTile(
       title: Text(basename(audioTrack.filePath)),
-      trailing: IconButton(icon: Icon(Icons.delete)),
+      trailing: IconButton(icon: Icon(Icons.delete),
+        onPressed: (){
+          StoreProvider.of<AppState>(context)
+            .dispatch(RemoveAudioAction(index));
+        }),
       dense: true,
     );
   }

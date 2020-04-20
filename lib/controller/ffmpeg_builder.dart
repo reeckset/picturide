@@ -1,24 +1,27 @@
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/project.dart';
 
-/*
--filter_complex 
-"[0:v]scale=1920:808:force_original_aspect_ratio=decrease,setsar=1[a];
-[1:v]scale=1920:808:force_original_aspect_ratio=decrease,setsar=1[b];
-[a][0:a][b][1:a]concat=n=2:v=1:a=1[v][a]"
- -map "[v]" -map "[a]"
-*/
+buildFFMPEGArgsPreview(Project project){
+  return buildFFMPEGArgs(project, outputResolution: {'w':256, 'h':144});
+}
 
-
-buildFFMPEGArgs(Project project){
+buildFFMPEGArgs(Project project, {outputResolution}){
+  if(outputResolution == null) outputResolution = project.outputResolution;
   final List<String> inputArgs = [];
   String filterComplexMapping = '';
 
   for(int i = 0; i < project.clips.length; i++){
     final Clip clip = project.clips[i];
+    inputArgs.add('-ss');
+    inputArgs.add(clip.startTimestamp.toString());
+    inputArgs.add('-t');
+    // TODO account for different tracks below
+    inputArgs.add((60.0/project.audioTracks[0].bpm
+      *clip.getTempoDurationMultiplier()).toString());
     inputArgs.add('-i');
     inputArgs.add(clip.getFilePath());
-    filterComplexMapping += _getClipFilterComplex(i, clip, project);
+    filterComplexMapping += _getClipFilterComplex(
+      i, clip, project, outputResolution: outputResolution);
   }
 
   inputArgs.add('-i');
@@ -39,20 +42,19 @@ buildFFMPEGArgs(Project project){
   return args;
 }
 
-_getClipFilterComplex(int i, Clip clip, Project project){
+_getClipFilterComplex(int i, Clip clip, Project project, {outputResolution}){
   return """[$i:v]
-    scale=${project.outputResolution['w']}:${project.outputResolution['h']}
+    scale=${outputResolution['w']}:${outputResolution['h']}
     :force_original_aspect_ratio=decrease,setsar=1,
-    pad=${project.outputResolution['w']}:${project.outputResolution['h']}:(ow-iw)/2:(oh-ih)/2,
-    trim=start=0:end=${60.0/project.audioTracks[0].bpm*clip.getTempoDurationMultiplier()},setpts=PTS-STARTPTS
-    [v$i];
-    [$i:a]atrim=0:${60.0/project.audioTracks[0].bpm*clip.getTempoDurationMultiplier()}[a$i];""";
+    pad=${outputResolution['w']}:${outputResolution['h']}:(ow-iw)/2:(oh-ih)/2
+    ,setpts=PTS-STARTPTS
+    [v$i];""";
 }
 
 String _getFilterComplexMappingConcat(int numberOfClips){
   String result = '';
   for(int i = 0; i < numberOfClips; i++){
-    result += '[v$i][a$i]';
+    result += '[v$i][$i:a]';
   }
   return result + 'concat=n=${numberOfClips}:v=1:a=1 [v] [a]';
 }

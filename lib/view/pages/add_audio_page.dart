@@ -5,9 +5,7 @@ import 'package:path/path.dart';
 import 'package:picturide/model/audio_track.dart';
 
 class AddAudioPage extends StatefulWidget {
-  AddAudioPage({Key key, this.title}) : super(key: key);
-
-  final String title;
+  AddAudioPage({Key key}) : super(key: key);
 
   @override
   AddAudioPageState createState() => AddAudioPageState();

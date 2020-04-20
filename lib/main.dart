@@ -5,6 +5,7 @@ import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/view/pages/add_audio_page.dart';
 import 'package:picturide/view/pages/home_page.dart';
 import 'package:picturide/view/pages/project_page.dart';
+import 'package:picturide/view/pages/export_page.dart';
 import 'package:picturide/view/theme.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
@@ -35,6 +36,7 @@ class App extends StatelessWidget {
           '/': (context) => HomePage(),
           '/add_audio_page': (context) => AddAudioPage(),
           '/project_page': (context) => ProjectPage(),
+          '/export_page': (context) => ExportPage(),
         },
       )
     );

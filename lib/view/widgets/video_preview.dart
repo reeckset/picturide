@@ -70,7 +70,7 @@ class _VideoPreviewState extends State<VideoPreview> {
     _flutterFFmpegConfig.registerNewFFmpegPipe().then((path) {
       pipePath = path;
       _flutterFFmpeg.executeWithArguments(
-        [...buildFFMPEGArgs(widget.project),
+        [...buildFFMPEGArgsPreview(widget.project),
         '-r', '30', '-f', 'matroska', '-c:a', 'aac', '-preset', 'ultrafast',
         '-y', pipePath]
       );

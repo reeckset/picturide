@@ -20,6 +20,10 @@ class EditingToolbar extends StatelessWidget {
     StoreProvider.of<AppState>(context).dispatch(RedoAction());
   }
 
+  _exportVideo(context) {
+    Navigator.of(context).pushNamed('/export_page');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -27,6 +31,7 @@ class EditingToolbar extends StatelessWidget {
         _buildSaveButton(context),
         _buildUndoButton(context),
         _buildRedoButton(context),
+        _buildExportButton(context),
       ],
     );
   }
@@ -75,5 +80,13 @@ class EditingToolbar extends StatelessWidget {
             : null,
         )
     );
+  }
+
+  _buildExportButton(BuildContext context) {
+    return Tooltip(message: 'Export', child: IconButton(
+      onPressed:() => _exportVideo(context),
+      icon: Icon(Icons.save_alt)
+    ));
+
   }
 }

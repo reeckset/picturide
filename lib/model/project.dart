@@ -15,7 +15,7 @@ class Project {
   Project.create(this.filepath){
     this.clips = List<Clip>();
     this.audioTracks = List<AudioTrack>();
-    this.outputResolution = {'w':256, 'h':144};
+    this.outputResolution = {'w':1280, 'h':720};
   }
 
   Project.fromProject(Project p){
@@ -26,6 +26,16 @@ class Project {
   }
 
   getAspectRatio() => outputResolution['w'] / outputResolution['h'];
+
+  double getDuration() {
+    double totalDuration = 0;
+    for(Clip clip in clips){
+      totalDuration +=
+        60.0/audioTracks[0].bpm*clip.getTempoDurationMultiplier();
+        // TODO account for different tracks
+    }
+    return totalDuration;
+  }
 
   //serialization
   factory Project.fromJson(Map<String, dynamic> json) => 
