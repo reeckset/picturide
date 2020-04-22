@@ -7,7 +7,6 @@ import 'package:path/path.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
-import 'package:picturide/view/pages/edit_clip_page.dart';
 import 'package:picturide/view/theme.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -21,6 +20,15 @@ class ClipTile extends StatefulWidget {
 }
 
 class ClipTileState extends State<ClipTile> with AutomaticKeepAliveClientMixin {
+
+  Map<String, Function> popupMenuEntries;
+
+  ClipTileState(){
+    popupMenuEntries = {
+      'Edit': (ctx) => _editClip(ctx),
+      'Remove': (ctx) => _removeClip(ctx),
+    };
+  }
 
   _getThumbnail() async {
     return await VideoThumbnail.thumbnailData(
@@ -65,36 +73,29 @@ class ClipTileState extends State<ClipTile> with AutomaticKeepAliveClientMixin {
               onPressed: () => _incrementClipTempo(context, widget.index)
             )
           ),
-          PopupMenuButton(
-            itemBuilder: _buildPopupMenu,
-          )
+          _buildPopupMenu(context),
       ]),
       dense: true,
     );
   }
 
-  List<PopupMenuEntry> _buildPopupMenu(context) => <PopupMenuEntry>[
-    PopupMenuItem(
-      child: ListTile(
-        leading: Icon(Icons.edit),
-        title: Text('Edit'),
-        onTap: () => _editClip(context),
-      )
-    ),
-    PopupMenuItem(
-      child: ListTile(
-        leading: Icon(Icons.delete),
-        title: Text('Remove'),
-        onTap: () => _removeClip(context),
-      )
-    )
-  ];
+  Widget _buildPopupMenu(context) => 
+    PopupMenuButton(
+      itemBuilder: (_) => popupMenuEntries.entries.map(
+        (entry) => PopupMenuItem(
+          value: entry.key,
+          child: Text(entry.key),
+        )
+      ).toList(),
+      onSelected: (val){
+        popupMenuEntries[val](context);
+      },
+    );
 
   _editClip(context) async {
-    final Clip editedClip =
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (c) => EditClipPage(widget.clip))
-      );
+    final Clip editedClip = await Navigator.of(context)
+      .pushNamed<dynamic>('/edit_clip_page', arguments: widget.clip);
+
     if (editedClip != null) {
       StoreProvider.of<AppState>(context).dispatch(
         EditClipAction(editedClip, widget.index)

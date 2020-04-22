@@ -33,7 +33,8 @@ class _ExportPageState extends State<ExportPage> {
         _getProject()
       ), '-r', frameRate.toString(), '-f', 'mp4', '-y', videoPath])
       .then((_)=>GallerySaver.saveVideo(videoPath)
-      .then((_)=>setState((){this.hasFinished = true;})));
+      .then((_)=>setState((){this.hasFinished = true;})))
+      .catchError((_){});
       _flutterFFmpegConfig.enableStatisticsCallback(
         (int time,
         int size,

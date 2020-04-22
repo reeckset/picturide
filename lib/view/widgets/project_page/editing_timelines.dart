@@ -9,7 +9,6 @@ import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
 import 'package:picturide/redux/actions/project_actions/sound_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
-import 'package:picturide/view/pages/edit_clip_page.dart';
 import 'package:picturide/view/theme.dart';
 import 'package:picturide/view/widgets/project_page/clip_tile.dart';
 
@@ -25,9 +24,9 @@ class _EditingTimelinesState extends State<EditingTimelines> {
 
   _editClip(context, clip) async =>
     await Navigator.of(context)
-    .push(MaterialPageRoute(builder: (c) => EditClipPage(clip)));
+    .pushNamed('/edit_clip_page', arguments:clip);
 
-  _askAudioTrack(context) async => Navigator.pushNamed(context, '/add_audio_page');
+  _askAudioTrack(context) async => Navigator.of(context).pushNamed('/add_audio_page');
 
   _addVideoClip(context) {
     _getVideoFile().then((path) =>
@@ -38,7 +37,7 @@ class _EditingTimelinesState extends State<EditingTimelines> {
           );
         }
       })
-    ).catchError((){});
+    ).catchError((_){});
   }
 
   _addAudioTrack(context){
