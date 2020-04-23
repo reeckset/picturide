@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/audio_track.dart';
+import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
@@ -36,10 +37,12 @@ void main() {
       (WidgetTester tester) async {
 
       final ProjectPage projectPage = ProjectPage();
+      final navigatorObserver = MockNavigatorObserver();
 
       await tester.pumpWidget(
         makeTestableWidgetRedux(
           projectPage, 
+          navigatorObserver: navigatorObserver,
           initialState: createInitialAppState()
         )
       );
@@ -52,6 +55,13 @@ void main() {
       // Tap the '+' icon 2 times and trigger a frame.
       for(int i = 0; i < 2; i++){
         await tester.tap(find.byTooltip('Add Video'));
+        await tester.pumpAndSettle();
+        //get the Route of the EditClipPage and pop it with a new AudioTrack
+        verify(navigatorObserver.didPush(captureAny, any))
+          .captured.last.navigator.pop(
+            Clip(filePath: 'filepath-VIDEO')
+          );   
+        await tester.pumpAndSettle();
       }
       await tester.pump();
 

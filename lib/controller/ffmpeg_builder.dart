@@ -18,6 +18,8 @@ buildFFMPEGArgs(Project project, {outputResolution}){
     // TODO account for different tracks below
     inputArgs.add((60.0/project.audioTracks[0].bpm
       *clip.getTempoDurationMultiplier()).toString());
+    inputArgs.add('-stream_loop');
+    inputArgs.add('-1');
     inputArgs.add('-i');
     inputArgs.add(clip.getFilePath());
     filterComplexMapping += _getClipFilterComplex(
