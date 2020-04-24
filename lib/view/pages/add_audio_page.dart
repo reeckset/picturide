@@ -44,8 +44,15 @@ class AddAudioPageState extends State<AddAudioPage> {
   }
 
   _submit(context){
-    _controller.stop();
-    Navigator.pop(context, AudioTrack(filePath: this.filepath, bpm: this.bpm));
+    _controller.getVideoInfo().then((fileInfo){
+      _controller.stop();
+      Navigator.pop(context, 
+        AudioTrack(
+          filePath: this.filepath,
+          bpm: this.bpm,
+          sourceDuration: fileInfo.duration
+        ));
+    }); 
   }
 
   @override

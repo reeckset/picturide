@@ -1,23 +1,30 @@
 import 'package:picturide/model/clip.dart';
+import 'package:picturide/model/clip_time_info.dart';
 import 'package:picturide/model/project.dart';
 
-buildFFMPEGArgsPreview(Project project){
-  return buildFFMPEGArgs(project, outputResolution: {'w':256, 'h':144});
+const int previewFrameRate = 30;
+
+List<String> buildFFMPEGArgsPreview(Project project, String pipePath){
+  return [
+    ...buildFFMPEGArgs(project, outputResolution: {'w':640, 'h':360}),
+    '-r', previewFrameRate.toString(),
+    '-f', 'matroska', '-c:a', 'aac', '-preset', 'ultrafast',
+    '-y', pipePath
+  ];
 }
 
 buildFFMPEGArgs(Project project, {outputResolution}){
   if(outputResolution == null) outputResolution = project.outputResolution;
   final List<String> inputArgs = [];
   String filterComplexMapping = '';
+  final Map<int, ClipTimeInfo> clipTimeInfos = project.getClipsTimeInfo();
 
   for(int i = 0; i < project.clips.length; i++){
     final Clip clip = project.clips[i];
     inputArgs.add('-ss');
     inputArgs.add(clip.startTimestamp.toString());
     inputArgs.add('-t');
-    // TODO account for different tracks below
-    inputArgs.add((60.0/project.audioTracks[0].bpm
-      *clip.getTempoDurationMultiplier()).toString());
+    inputArgs.add(clipTimeInfos[i].duration.toString());
     inputArgs.add('-stream_loop');
     inputArgs.add('-1');
     inputArgs.add('-i');

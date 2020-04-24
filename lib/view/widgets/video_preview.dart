@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:picturide/controller/ffmpeg_builder.dart';
 import 'package:picturide/model/project.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
+import 'package:picturide/redux/actions/preview_actions.dart';
 import 'package:picturide/view/widgets/inform_dialog.dart';
+import 'package:picturide/redux/state/app_state.dart';
 
 class VideoPreview extends StatefulWidget {
   final Project project;
@@ -25,12 +30,30 @@ class _VideoPreviewState extends State<VideoPreview> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _setPlayerPositionListener();
+    _controller.addIjkPlayerOptions(
+      [TargetPlatform.iOS, TargetPlatform.android],
+      [
+        IjkOption(IjkOptionCategory.format, 'analyzemaxduration', 10),
+        IjkOption(IjkOptionCategory.format, 'probesize', 10240),
+        IjkOption(IjkOptionCategory.format, 'flush_packets', 1),
+        IjkOption(IjkOptionCategory.player, 'packet-buffering', 0),
+        IjkOption(IjkOptionCategory.player, 'framedrop', 1),
+      ].toSet());
     _controller.ijkStatusStream.listen((IjkStatus status) {
       if(status == IjkStatus.complete){
         _controller.reset();
       }
       this.setState((){ playerStatus = status; });
     });
+  }
+
+  void _setPlayerPositionListener() {
+    _controller.videoInfoStream.listen(
+      (VideoInfo vi) => StoreProvider.of<AppState>(context)
+      .dispatch(UpdatePreviewCurrentTime(vi.currentPosition)));
+    Timer.periodic(Duration(milliseconds: 100),
+      (Timer t) => _controller.refreshVideoInfo());
   }
 
   @override
@@ -42,24 +65,24 @@ class _VideoPreviewState extends State<VideoPreview> {
 
   @override
   Widget build(BuildContext context) =>
-        IjkPlayer(
-          mediaController: _controller,
-          controllerWidgetBuilder: 
-            (mediaController) {
-              return this.playerStatus != IjkStatus.playing 
-              ? Center(
-                child: IconButton(
-                  icon: Icon(Icons.play_arrow),
-                  onPressed: _refresh,
-                )
-              ) : IconButton(
-                  icon: Icon(Icons.play_arrow),
-                  onPressed: _refresh,
-                );
-            }
-        );
+    IjkPlayer(
+      mediaController: _controller,
+      controllerWidgetBuilder: 
+        (mediaController) {
+          return this.playerStatus != IjkStatus.playing 
+          ? Center(
+            child: IconButton(
+              icon: Icon(Icons.play_arrow),
+              onPressed: _play,
+            )
+          ) : IconButton(
+              icon: Icon(Icons.play_arrow),
+              onPressed: () => _play,
+            );
+        }
+    );
 
-  _refresh(){
+  _play(){
     try{_flutterFFmpeg.cancel();}catch(e){}
 
     if(widget.project.audioTracks.isEmpty){
@@ -70,9 +93,7 @@ class _VideoPreviewState extends State<VideoPreview> {
     _flutterFFmpegConfig.registerNewFFmpegPipe().then((path) {
       pipePath = path;
       _flutterFFmpeg.executeWithArguments(
-        [...buildFFMPEGArgsPreview(widget.project),
-        '-r', '30', '-f', 'matroska', '-c:a', 'aac', '-preset', 'ultrafast',
-        '-y', pipePath]
+        buildFFMPEGArgsPreview(widget.project, pipePath),
       );
       _controller.setNetworkDataSource(path, autoPlay: true);
     });

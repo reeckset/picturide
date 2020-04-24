@@ -15,15 +15,19 @@ class Clip implements FileWrapper {
   int tempoDurationPower;
   double startTimestamp;
   String filePath;
+  double sourceDuration;
 
   Clip({@required this.filePath,
     this.tempoDurationPower = 1,
-    this.startTimestamp = 0.0});
+    this.startTimestamp = 0.0,
+    this.sourceDuration,
+  });
 
   Clip.fromClip(Clip c){
     this.tempoDurationPower = c.tempoDurationPower;
     this.filePath = c.filePath;
     this.startTimestamp = c.startTimestamp;
+    this.sourceDuration = c.sourceDuration;
   }
 
   incrementTempoDuration(){

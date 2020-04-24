@@ -5,6 +5,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
+import 'package:picturide/model/clip_time_info.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
 import 'package:picturide/redux/actions/project_actions/sound_editing_actions.dart';
@@ -55,21 +56,10 @@ class _EditingTimelinesState extends State<EditingTimelines> {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, Project>(
       converter: (store) => store.state.history.project,
+      distinct: true,
       builder: (context, project) => _timelineViews(project, context),
     );
   }
-
-  Widget _sourceFilesExplorer<T>(
-    List<T> files,
-    Widget Function(T, int, BuildContext) tileBuilder,
-    BuildContext context
-  ) =>
-    ListView(
-      padding: EdgeInsets.all(10.0),
-      children: files.asMap().entries.map(
-          (entry) => tileBuilder(entry.value, entry.key, context)
-      ).toList()
-    );
 
   Widget _timelineViews(Project project, context) => 
     DefaultTabController(
@@ -91,10 +81,9 @@ class _EditingTimelinesState extends State<EditingTimelines> {
             Expanded(
               child: TabBarView(
                 children: [
-                  _sourceFilesExplorer(project.clips, _clipTileBuilder,context),
-                  _sourceFilesExplorer(
-                    project.audioTracks, _audioTrackTileBuilder, context
-                  ),
+                  _clipsTimeline(
+                    project, context),
+                  _audioTracksTimeline(project.audioTracks, context),
                 ]
               )
             )
@@ -122,9 +111,64 @@ class _EditingTimelinesState extends State<EditingTimelines> {
     );
   }
 
-  Widget _clipTileBuilder(Clip clip, int index, _) {
-    return ClipTile(clip, index);
+  Widget _clipsTimeline(
+    Project project, BuildContext context
+  ) {
+    print('Triggered CLIP TILE REBUILD');
+    print(project.hashCode);
+    final List<Widget> timelineContent = [];
+    final List<Clip> clips = project.clips;
+    final Map<int, ClipTimeInfo> clipsTimeInfo = project.getClipsTimeInfo();
+    for(int i = 0; i < clips.length; i++){
+      final Clip clip = clips[i];
+      final ClipTimeInfo timeInfo = clipsTimeInfo[i];
+
+      if(timeInfo.beatNumber == 0 && project.audioTracks.isNotEmpty){
+        timelineContent.add(
+          Padding(padding: EdgeInsets.only(bottom: 10.0), child: Text(
+            basename(project.audioTracks[timeInfo.songIndex].filePath
+          ), textAlign: TextAlign.center, style: TextStyle(color: accentColor))
+        ));
+      }
+      if(timeInfo.beatNumber % 4 == 0){
+        timelineContent.add(
+          Divider(color: accentColor, height: 1)
+        );
+      } else if(timeInfo.beatNumber % 1 == 0){
+        timelineContent.add(
+          Divider(color: lightBackgroundColor,
+            indent: 10, endIndent: 10, height: 1)
+        );
+      }
+      timelineContent.add(
+        ClipTile(
+          clip, i, timeInfo,
+          warning: 
+            (timeInfo.beatNumber % timeInfo.beats != 0 && timeInfo.beats < 2)
+            || (timeInfo.beats == 2 && timeInfo.beatNumber % 4 > 2)
+            || (timeInfo.beats >= 4 && timeInfo.beatNumber % 4 > 0)
+            ? 'Clip not synced with tempo' : null
+        )
+      );
+    }
+    return _timeline(timelineContent);
   }
+
+  Widget _timeline(children){
+    return ListView(
+      padding: EdgeInsets.all(10.0),
+      children: children
+    );
+  }
+
+  Widget _audioTracksTimeline(
+    List files,
+    BuildContext context
+  ) =>
+    _timeline(files.asMap().entries.map(
+          (entry) => _audioTrackTileBuilder(entry.value, entry.key, context)
+      ).toList()
+    );
 
   Widget _audioTrackTileBuilder(AudioTrack audioTrack, int index, context) {
     return ListTile(

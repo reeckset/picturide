@@ -22,10 +22,13 @@ class EditClipPageState extends State<EditClipPage> {
   Uint8List startThumbnail;
 
   _submit(context){
-    _controller.stop();
-    final Clip editedClip = Clip.fromClip(widget.originalClip);
-    editedClip.startTimestamp = startTimestamp;
-    Navigator.pop(context, editedClip);
+    _controller.getVideoInfo().then((VideoInfo fileInfo){
+      _controller.stop();
+      final Clip editedClip = Clip.fromClip(widget.originalClip);
+      editedClip.startTimestamp = startTimestamp;
+      editedClip.sourceDuration = fileInfo.duration;
+      Navigator.pop(context, editedClip);
+    });
   }
 
   _setStart({double position}){
