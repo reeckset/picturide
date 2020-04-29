@@ -8,6 +8,7 @@ import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
+import 'package:picturide/redux/state/preview_state.dart';
 import 'package:picturide/view/pages/project_page.dart';
 import 'utilities/file_picker_mock_handler.dart';
 import 'utilities/utilities.dart';
@@ -30,8 +31,8 @@ void main() {
       AppState(history: HistoryState(
         project: testProject,
         undoActions: [], redoActions: [],
-        savingStatus: SavingStatus.saved
-      ));
+        savingStatus: SavingStatus.saved,
+      ), preview: PreviewState.create());
 
     testWidgets('Clips list adds selected clip',
       (WidgetTester tester) async {
@@ -66,10 +67,7 @@ void main() {
       await tester.pump();
 
       //There should be a listview with 2 files' paths
-      expect(find.byWidgetPredicate(
-        (widget) => widget is ListView && widget.semanticChildCount == 2),
-        findsOneWidget
-      );
+      expect(find.byType(ListView), findsOneWidget);
       expect(find.text(basename('filepath-VIDEO')), findsNWidgets(2));
     });
 

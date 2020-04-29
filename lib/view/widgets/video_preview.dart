@@ -26,6 +26,7 @@ class _VideoPreviewState extends State<VideoPreview> {
   final FlutterFFmpegConfig _flutterFFmpegConfig = FlutterFFmpegConfig();
   String pipePath;
   IjkStatus playerStatus;
+  Timer pollingTimer;
 
   @override
   void didChangeDependencies() {
@@ -52,7 +53,7 @@ class _VideoPreviewState extends State<VideoPreview> {
     _controller.videoInfoStream.listen(
       (VideoInfo vi) => StoreProvider.of<AppState>(context)
       .dispatch(UpdatePreviewCurrentTime(vi.currentPosition)));
-    Timer.periodic(Duration(milliseconds: 100),
+    this.pollingTimer = Timer.periodic(Duration(milliseconds: 100),
       (Timer t) => _controller.refreshVideoInfo());
   }
 
@@ -110,5 +111,6 @@ class _VideoPreviewState extends State<VideoPreview> {
   void dispose() {
     super.dispose();
     _controller.dispose();
+    pollingTimer.cancel();
   }
 }

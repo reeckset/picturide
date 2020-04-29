@@ -5,5 +5,5 @@ Project projectReducer(Project state, ProjectAction action) {
   if(state == null) return state;
   final Project newState = Project.fromProject(state);
   
-  return action.applyToState(newState);
+  return action.applyToState(newState)..generateClipsTimeInfo();
 }

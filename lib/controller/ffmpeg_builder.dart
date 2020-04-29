@@ -6,7 +6,7 @@ const int previewFrameRate = 30;
 
 List<String> buildFFMPEGArgsPreview(Project project, String pipePath){
   return [
-    ...buildFFMPEGArgs(project, outputResolution: {'w':640, 'h':360}),
+    ...buildFFMPEGArgs(project, outputResolution: {'w':256, 'h':144}),
     '-r', previewFrameRate.toString(),
     '-f', 'matroska', '-c:a', 'aac', '-preset', 'ultrafast',
     '-y', pipePath

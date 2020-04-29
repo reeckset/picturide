@@ -110,7 +110,7 @@ class ClipTileState extends State<ClipTile> with AutomaticKeepAliveClientMixin {
       height: 50.0,
       width: 72.0,
       child: Stack(children: [
-        _buildThumbnailMemo(widget.clip),
+        Center(child: _buildThumbnailMemo(widget.clip)),
         ...widget.warning != null
           ? [Center(child:
               IconButton(icon: Icon(Icons.warning),
