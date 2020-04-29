@@ -47,6 +47,7 @@ class IncrementClipTempoAction implements ProjectAction {
 
   @override
   Project applyToState(Project state) {
+    state.clips = [...state.clips];
     state.clips[clipIndex] = 
       Clip.fromClip(state.clips[clipIndex])..incrementTempoDuration();
     return state;
@@ -63,8 +64,26 @@ class DecrementClipTempoAction implements ProjectAction {
 
   @override
   Project applyToState(Project state) {
+    state.clips = [...state.clips];
     state.clips[clipIndex] = 
       Clip.fromClip(state.clips[clipIndex])..decrementTempoDuration();
+    return state;
+  }
+}
+
+class EditClipAction implements ProjectAction {
+  int clipIndex;
+  Clip newClip;
+  EditClipAction(this.newClip, this.clipIndex);
+
+  @override
+  getUndoAction(Project previousState) => 
+    EditClipAction(previousState.clips[clipIndex], this.clipIndex);
+
+  @override
+  Project applyToState(Project state) {
+    state.clips = [...state.clips];
+    state.clips[clipIndex] = newClip;
     return state;
   }
 }

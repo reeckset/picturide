@@ -5,9 +5,7 @@ import 'package:path/path.dart';
 import 'package:picturide/model/audio_track.dart';
 
 class AddAudioPage extends StatefulWidget {
-  AddAudioPage({Key key, this.title}) : super(key: key);
-
-  final String title;
+  AddAudioPage({Key key}) : super(key: key);
 
   @override
   AddAudioPageState createState() => AddAudioPageState();
@@ -46,8 +44,15 @@ class AddAudioPageState extends State<AddAudioPage> {
   }
 
   _submit(context){
-    _controller.stop();
-    Navigator.pop(context, AudioTrack(filePath: this.filepath, bpm: this.bpm));
+    _controller.getVideoInfo().then((fileInfo){
+      _controller.stop();
+      Navigator.pop(context, 
+        AudioTrack(
+          filePath: this.filepath,
+          bpm: this.bpm,
+          sourceDuration: fileInfo.duration
+        ));
+    }); 
   }
 
   @override

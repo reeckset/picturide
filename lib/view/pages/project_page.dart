@@ -46,6 +46,7 @@ class ProjectPageState extends State<ProjectPage> {
       onWillPop: () async => await _confirmWantsToLeave(context),
       child: StoreConnector<AppState, Project>(
           converter: (store) => store.state.history.project,
+          distinct: true,
           builder: (context, Project project) =>
             _getPageContent(context, project)
         )

@@ -7,11 +7,20 @@ part 'audio_track.g.dart';
 class AudioTrack implements FileWrapper {
   int bpm;
   String filePath;
+  double sourceDuration;
 
-  AudioTrack({this.filePath, this.bpm});
+  AudioTrack({
+    this.filePath,
+    this.bpm,
+    this.sourceDuration
+  });
 
   @override
   String getFilePath() => filePath;
+
+  double getBeatSeconds(){
+    return 60.0/this.bpm.toDouble();
+  }
 
   //serialization
   factory AudioTrack.fromJson(Map<String, dynamic> json) => 

@@ -5,11 +5,13 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
+import 'package:picturide/model/clip_time_info.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
 import 'package:picturide/redux/actions/project_actions/sound_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/view/theme.dart';
+import 'package:picturide/view/widgets/project_page/clip_tile.dart';
 
 class EditingTimelines extends StatefulWidget { 
   @override
@@ -18,23 +20,25 @@ class EditingTimelines extends StatefulWidget {
 
 class _EditingTimelinesState extends State<EditingTimelines> {
 
-  _incrementClipTempo(context, clipIndex){
-    StoreProvider.of<AppState>(context)
-      .dispatch(IncrementClipTempoAction(clipIndex));
-  }
+  _getVideoFile() async =>
+    (await FilePicker.getFile(type: FileType.video)).path;
 
-  _askClipFile() async => (await FilePicker.getFile(type: FileType.video)).path;
+  _editClip(context, clip) async =>
+    await Navigator.of(context)
+    .pushNamed('/edit_clip_page', arguments:clip);
 
-  _askAudioTrack(context) async => Navigator.pushNamed(context, '/add_audio_page');
+  _askAudioTrack(context) async => Navigator.of(context).pushNamed('/add_audio_page');
 
   _addVideoClip(context) {
-    _askClipFile().then((clipFile) {
-      if(clipFile is String){
-        StoreProvider.of<AppState>(context).dispatch(
-          AddClipAction(Clip(clipFile))
-        );
-      }
-    });
+    _getVideoFile().then((path) =>
+      _editClip(context, Clip(filePath: path)).then((clip) {
+        if(clip is Clip){
+          StoreProvider.of<AppState>(context).dispatch(
+            AddClipAction(clip)
+          );
+        }
+      })
+    ).catchError((_){});
   }
 
   _addAudioTrack(context){
@@ -52,21 +56,10 @@ class _EditingTimelinesState extends State<EditingTimelines> {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, Project>(
       converter: (store) => store.state.history.project,
+      distinct: true,
       builder: (context, project) => _timelineViews(project, context),
     );
   }
-
-  Widget _sourceFilesExplorer<T>(
-    List<T> files,
-    Widget Function(T, int, BuildContext) tileBuilder,
-    BuildContext context
-  ) =>
-    ListView(
-      padding: EdgeInsets.all(10.0),
-      children: files.asMap().entries.map(
-          (entry) => tileBuilder(entry.value, entry.key, context)
-      ).toList()
-    );
 
   Widget _timelineViews(Project project, context) => 
     DefaultTabController(
@@ -88,10 +81,8 @@ class _EditingTimelinesState extends State<EditingTimelines> {
             Expanded(
               child: TabBarView(
                 children: [
-                  _sourceFilesExplorer(project.clips, _clipTileBuilder,context),
-                  _sourceFilesExplorer(
-                    project.audioTracks, _audioTrackTileBuilder, context
-                  ),
+                  _clipsTimeline(project, context),
+                  _audioTracksTimeline(project.audioTracks, context),
                 ]
               )
             )
@@ -119,31 +110,76 @@ class _EditingTimelinesState extends State<EditingTimelines> {
     );
   }
 
-  Widget _clipTileBuilder(Clip clip, int index, context) {
+  _clipsTimelineBarDivider() => Divider(color: accentColor, height: 1);
 
-    return ListTile(
-      contentPadding: EdgeInsets.only(left: 10.0),
-      title: Text(basename(clip.filePath)),
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          ButtonTheme(
-            minWidth: 36.0,
-            height: 36.0,
-            child: OutlineButton(
-              child: Text(clip.getTempoDurationText()),
-              padding: EdgeInsets.zero,
-              onPressed: () => _incrementClipTempo(context, index)
-            )
-          ),
-          IconButton(icon: Icon(Icons.more_vert), onPressed: (){}),
-      ]),
-      dense: true,
+  _clipsTimelineBeatDivider() => Divider(
+      color: lightBackgroundColor,
+      indent: 10,
+      endIndent: 10,
+      height: 1
+  );
+
+  _clipsTimelineAudioTrackDivider(String title) => Padding(
+    padding: EdgeInsets.only(bottom: 10.0),
+    child: Text(
+      title,
+      textAlign: TextAlign.center,
+      style: TextStyle(color: accentColor))
+    );
+
+  Widget _clipsTimeline(
+    Project project, BuildContext context
+  ) {
+    final List<Widget> timelineContent = [];
+    final List<Clip> clips = project.clips;
+    final Map<int, ClipTimeInfo> clipsTimeInfo = project.getClipsTimeInfo();
+    for(int i = 0; i < clips.length; i++){
+      final Clip clip = clips[i];
+      final ClipTimeInfo timeInfo = clipsTimeInfo[i];
+
+      if(timeInfo.isFirstOfTrack() && project.audioTracks.isNotEmpty){
+        timelineContent.add(_clipsTimelineAudioTrackDivider(
+          basename(project.audioTracks[timeInfo.songIndex].filePath)
+        ));
+      }
+      if(timeInfo.isOnBarFirstBeat()){
+        timelineContent.add(_clipsTimelineBarDivider());
+      } else if(timeInfo.isOnBeat()){
+        timelineContent.add(_clipsTimelineBeatDivider());
+      }
+      timelineContent.add(
+        ClipTile(clip, i, timeInfo,
+          warning: timeInfo.isSyncedToBeat()
+            ? null : 'Clip not synced with tempo')
+      );
+    }
+    return _timeline(timelineContent);
+  }
+
+  Widget _timeline(children){
+    return ListView(
+      padding: EdgeInsets.all(10.0),
+      children: children
     );
   }
+
+  Widget _audioTracksTimeline(
+    List files,
+    BuildContext context
+  ) =>
+    _timeline(files.asMap().entries.map(
+          (entry) => _audioTrackTileBuilder(entry.value, entry.key, context)
+      ).toList()
+    );
 
   Widget _audioTrackTileBuilder(AudioTrack audioTrack, int index, context) {
     return ListTile(
       title: Text(basename(audioTrack.filePath)),
-      trailing: IconButton(icon: Icon(Icons.delete)),
+      trailing: IconButton(icon: Icon(Icons.delete),
+        onPressed: (){
+          StoreProvider.of<AppState>(context)
+            .dispatch(RemoveAudioAction(index));
+        }),
       dense: true,
     );
   }

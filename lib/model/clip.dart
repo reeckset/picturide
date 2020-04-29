@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 
 import 'package:picturide/model/file_wrapper.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -11,14 +12,22 @@ class Clip implements FileWrapper {
   static final int maxTempoDurationPower = 5;
   static final int minTempoDurationPower = -2;
 
-  int tempoDurationPower = 1;
+  int tempoDurationPower;
+  double startTimestamp;
   String filePath;
+  double sourceDuration;
 
-  Clip(this.filePath, {this.tempoDurationPower = 1});
+  Clip({@required this.filePath,
+    this.tempoDurationPower = 1,
+    this.startTimestamp = 0.0,
+    this.sourceDuration,
+  });
 
   Clip.fromClip(Clip c){
     this.tempoDurationPower = c.tempoDurationPower;
     this.filePath = c.filePath;
+    this.startTimestamp = c.startTimestamp;
+    this.sourceDuration = c.sourceDuration;
   }
 
   incrementTempoDuration(){

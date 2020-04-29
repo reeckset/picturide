@@ -4,7 +4,6 @@ import 'package:picturide/controller/app_preferences_controller.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/history_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
-import 'package:picturide/view/pages/project_page.dart';
 import 'package:picturide/view/widgets/ask_confirm.dart';
 import 'package:picturide/view/widgets/ask_text_input.dart';
 
@@ -44,8 +43,7 @@ class HomePageState extends State<HomePage> {
   _openProject(String projectPath) async {
     StoreProvider.of<AppState>(context)
       .dispatch(setActiveProjectActionCreator(projectPath));
-    Navigator.push(context, MaterialPageRoute(
-      builder: (context) => ProjectPage()));
+    Navigator.of(context).pushNamed('/project_page');
   }
 
   _deleteProject(String projectPath, context) async {

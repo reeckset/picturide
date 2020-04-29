@@ -21,9 +21,11 @@ void main() {
     });
     test('Add Clip', () {
       AppState addedClipState =
-        appReducer(initialState, AddClipAction(Clip('path')));
-      addedClipState = appReducer(addedClipState, AddClipAction(Clip('path')));
-      addedClipState = appReducer(addedClipState, AddClipAction(Clip('path')));
+        appReducer(initialState, AddClipAction(Clip(filePath: 'path')));
+      addedClipState = 
+        appReducer(addedClipState, AddClipAction(Clip(filePath: 'path')));
+      addedClipState =
+        appReducer(addedClipState, AddClipAction(Clip(filePath: 'path')));
 
       expect(addedClipState.history.project.clips.length, 3);
 
@@ -35,9 +37,11 @@ void main() {
 
     test('Remove Clip', () {
       AppState addedClipState =
-        appReducer(initialState, AddClipAction(Clip('path')));
-      addedClipState = appReducer(addedClipState, AddClipAction(Clip('del')));
-      addedClipState = appReducer(addedClipState, AddClipAction(Clip('path')));
+        appReducer(initialState, AddClipAction(Clip(filePath: 'path')));
+      addedClipState =
+        appReducer(addedClipState, AddClipAction(Clip(filePath: 'del')));
+      addedClipState =
+        appReducer(addedClipState, AddClipAction(Clip(filePath: 'path')));
 
       final AppState removedClipState = 
         appReducer(addedClipState, RemoveClipAction(1));
@@ -94,7 +98,7 @@ void main() {
     test('Increment clip duration', () {
       final AppState addedClipState =
         appReducer(initialState, AddClipAction(
-          Clip('path', tempoDurationPower: 2)
+          Clip(filePath: 'path', tempoDurationPower: 2)
         )
       );
       
