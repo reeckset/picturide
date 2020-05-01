@@ -148,13 +148,18 @@ class ClipTileState extends State<ClipTile> with AutomaticKeepAliveClientMixin {
     );
 
   _editClip(context) async {
-    final Clip editedClip = await Navigator.of(context)
+    final List<Clip> editedClips = await Navigator.of(context)
       .pushNamed<dynamic>('/edit_clip_page', arguments: widget.clip);
 
-    if (editedClip != null) {
+    if (editedClips != null) {
       StoreProvider.of<AppState>(context).dispatch(
-        EditClipAction(editedClip, widget.index)
+        EditClipAction(editedClips[0], widget.index)
       );
+      for(int i = 1; i < editedClips.length; i++){
+        StoreProvider.of<AppState>(context).dispatch(
+          AddClipAction(editedClips[i], index: widget.index)
+        );
+      }
     }
   }
 

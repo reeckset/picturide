@@ -20,25 +20,26 @@ class EditingTimelines extends StatefulWidget {
 
 class _EditingTimelinesState extends State<EditingTimelines> {
 
-  _getVideoFile() async =>
-    (await FilePicker.getFile(type: FileType.video)).path;
+  Future<Map<String, String>> _getVideoFiles() async =>
+    (await FilePicker.getMultiFilePath(type: FileType.video));
 
-  _editClip(context, clip) async =>
+  _getEditedClips(context, clip) async =>
     await Navigator.of(context)
     .pushNamed('/edit_clip_page', arguments:clip);
 
   _askAudioTrack(context) async => Navigator.of(context).pushNamed('/add_audio_page');
 
   _addVideoClip(context) {
-    _getVideoFile().then((path) =>
-      _editClip(context, Clip(filePath: path)).then((clip) {
-        if(clip is Clip){
-          StoreProvider.of<AppState>(context).dispatch(
-            AddClipAction(clip)
-          );
-        }
-      })
-    ).catchError((_){});
+    _getVideoFiles().then((Map<String, String> paths) async {
+      for(String path in paths.values){
+        final clips = await _getEditedClips(context, Clip(filePath: path));
+        if(clips != null){
+          for(var clip in clips){
+            StoreProvider.of<AppState>(context).dispatch(
+              AddClipAction(clip)
+            );
+        }}
+    }}).catchError((_){});
   }
 
   _addAudioTrack(context){
