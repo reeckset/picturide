@@ -7,6 +7,7 @@ import 'package:memoize/memoize.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/clip_time_info.dart';
+import 'package:picturide/redux/actions/preview_actions.dart';
 import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/preview_state.dart';
@@ -60,23 +61,48 @@ class ClipTileState extends State<ClipTile> with AutomaticKeepAliveClientMixin {
         + widget.timeInfo.duration
         > previewState.currentTime;
 
+  _removeClip(context) async {
+    StoreProvider.of<AppState>(context).dispatch(
+      RemoveClipAction(widget.index)
+    );
+  }
+
+  _selectClip(context) async {
+    final currentSelectedClip =
+      StoreProvider.of<AppState>(context).state.preview.selectedClip;
+    StoreProvider.of<AppState>(context).dispatch(
+      SelectClipAction(widget.index == currentSelectedClip
+        ? null : widget.index 
+      )
+    );
+  }
+
+  _getColor(PreviewState previewState){
+    if(previewState.selectedClip == widget.index){
+      return accentColor;
+    } else if(_isBeingPlayed(previewState)){
+      return lightBackgroundColor;
+    }
+    return Colors.transparent;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return 
-    StoreConnector<AppState, bool>(
-      converter: (store) => _isBeingPlayed(store.state.preview),
+    StoreConnector<AppState, Color>(
+      converter: (store) => _getColor(store.state.preview),
       distinct: true,
-      builder: (context, isBeingPlayed) => 
+      builder: (context, color) => 
       Container(
-        color: isBeingPlayed
-          ? lightBackgroundColor : Colors.transparent,
+        color: color,
         child: _buildListTile(context),
       )
     );
   }
 
   _buildListTile(context) => ListTile(
+    onTap: () => _selectClip(context),
     contentPadding: EdgeInsets.only(left: 10.0),
     leading: _buildLeading(context),
     title: Text(basename(widget.clip.filePath)),
@@ -161,12 +187,6 @@ class ClipTileState extends State<ClipTile> with AutomaticKeepAliveClientMixin {
         );
       }
     }
-  }
-
-  _removeClip(context) async {
-    StoreProvider.of<AppState>(context).dispatch(
-      RemoveClipAction(widget.index)
-    );
   }
 
   @override

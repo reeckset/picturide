@@ -27,6 +27,7 @@ class _VideoPreviewState extends State<VideoPreview> {
   String pipePath;
   IjkStatus playerStatus;
   Timer pollingTimer;
+  double startTime = 0;
 
   @override
   void didChangeDependencies() {
@@ -52,7 +53,7 @@ class _VideoPreviewState extends State<VideoPreview> {
   void _setPlayerPositionListener() {
     _controller.videoInfoStream.listen(
       (VideoInfo vi) => StoreProvider.of<AppState>(context)
-      .dispatch(UpdatePreviewCurrentTime(vi.currentPosition)));
+      .dispatch(UpdatePreviewCurrentTime(vi.currentPosition+startTime)));
     this.pollingTimer = Timer.periodic(Duration(milliseconds: 100),
       (Timer t) => _controller.refreshVideoInfo());
   }
@@ -90,13 +91,23 @@ class _VideoPreviewState extends State<VideoPreview> {
       _showNoSoundAlert();
       return;
     }
+    
 
-    _flutterFFmpegConfig.registerNewFFmpegPipe().then((path) {
-      pipePath = path;
-      _flutterFFmpeg.executeWithArguments(
-        buildFFMPEGArgsPreview(widget.project, pipePath),
-      );
-      _controller.setNetworkDataSource(path, autoPlay: true);
+    final selectedClip =
+      StoreProvider.of<AppState>(context).state.preview.selectedClip;
+
+    this.setState(() {
+      startTime = selectedClip == null ? 0
+        : widget.project.getClipsTimeInfo()[selectedClip].startTime;
+
+      _flutterFFmpegConfig.registerNewFFmpegPipe().then((path) {
+        pipePath = path;
+        _flutterFFmpeg.executeWithArguments(
+          buildFFMPEGArgsPreview(widget.project, pipePath,
+            startAtClip: selectedClip),
+        );
+        _controller.setNetworkDataSource(path, autoPlay: true);
+      });
     });
   }
 

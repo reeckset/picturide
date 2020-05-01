@@ -1,9 +1,9 @@
 import 'package:meta/meta.dart';
 
-@immutable
 class PreviewState {
 
-  final double currentTime;
+  double currentTime;
+  int selectedClip;
 
   factory PreviewState.create() {
     return PreviewState(
@@ -14,4 +14,9 @@ class PreviewState {
   PreviewState({
     @required this.currentTime
   });
+
+  PreviewState.fromPreviewState(PreviewState p):
+    currentTime = p.currentTime,
+    selectedClip = p.selectedClip;
+  
 }
