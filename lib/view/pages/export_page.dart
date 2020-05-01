@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
@@ -27,13 +28,18 @@ class _ExportPageState extends State<ExportPage> {
     super.initState();
     Future(() async {
       final String directory = (await getApplicationDocumentsDirectory()).path;
-      final String videoPath = '$directory/output.mp4';
+      final String currentTimestamp =
+        DateTime.now().millisecondsSinceEpoch.toString();
+      final String videoPath = '$directory/${currentTimestamp}.mp4';
       _flutterFFmpeg.executeWithArguments([
       ...buildFFMPEGArgs(
         _getProject()
       ), '-r', frameRate.toString(), '-f', 'mp4', '-y', videoPath])
-      .then((_)=>GallerySaver.saveVideo(videoPath)
-      .then((_)=>setState((){this.hasFinished = true;})))
+      .then((_)=>GallerySaver.saveVideo(videoPath, albumName: 'Picturide')
+      .then((_)=>setState((){
+        this.hasFinished = true;
+        File(videoPath).delete();
+      })))
       .catchError((_){});
       _flutterFFmpegConfig.enableStatisticsCallback(
         (int time,
