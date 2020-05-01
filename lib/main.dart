@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:picturide/redux/reducers/app_reducer.dart';
 import 'package:picturide/redux/state/app_state.dart';
@@ -16,7 +17,11 @@ void main() {
     appReducer,
     initialState:  AppState.create(),
     middleware: [thunkMiddleware]);
-  return runApp(App(store: store));
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+  .then((_) {
+    runApp(App(store: store));
+  });
 }
 
 class App extends StatelessWidget {
