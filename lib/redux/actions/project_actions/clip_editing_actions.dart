@@ -1,6 +1,9 @@
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/project_actions/project_action.dart';
+import 'package:picturide/redux/state/app_state.dart';
+import 'package:redux/redux.dart';
+import 'package:redux_thunk/redux_thunk.dart';
 
 class AddClipAction implements ProjectAction {
   Clip clip;
@@ -84,6 +87,23 @@ class EditClipAction implements ProjectAction {
   Project applyToState(Project state) {
     state.clips = [...state.clips];
     state.clips[clipIndex] = newClip;
+    return state;
+  }
+}
+
+class MoveClipAction extends ProjectAction {
+  int oldIndex, newIndex;
+  MoveClipAction(this.oldIndex, this.newIndex);
+
+  @override
+  getUndoAction(Project previousState) => 
+    MoveClipAction(newIndex, oldIndex);
+  
+  @override
+  Project applyToState(Project state) {
+    state.clips = [...state.clips];
+    final clip = state.clips.removeAt(oldIndex);
+    state.clips.insert(newIndex, clip);
     return state;
   }
 }

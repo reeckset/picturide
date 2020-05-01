@@ -149,7 +149,7 @@ class _EditingTimelinesState extends State<EditingTimelines> {
         timelineContent.add(_clipsTimelineBeatDivider());
       }
       timelineContent.add(
-        ClipTile(clip, i, timeInfo,
+        ClipTile(clip, i, timeInfo, key: ValueKey(clip),
           warning: timeInfo.isSyncedToBeat()
             ? null : 'Clip not synced with tempo')
       );

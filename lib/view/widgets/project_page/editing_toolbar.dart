@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:picturide/redux/actions/history_actions.dart';
+import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
 
@@ -24,6 +25,13 @@ class EditingToolbar extends StatelessWidget {
     Navigator.of(context).pushNamed('/export_page');
   }
 
+  _moveClip(context, relativeMovement){
+    final idx = StoreProvider.of<AppState>(context).state.preview.selectedClip;
+    StoreProvider.of<AppState>(context).dispatch(
+      MoveClipAction(idx, idx+relativeMovement)
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -32,6 +40,7 @@ class EditingToolbar extends StatelessWidget {
         _buildUndoButton(context),
         _buildRedoButton(context),
         _buildExportButton(context),
+        ..._buildReorderControls(context),
       ],
     );
   }
@@ -39,6 +48,7 @@ class EditingToolbar extends StatelessWidget {
   Widget _buildSaveButton(context){
     return StoreConnector<AppState, SavingStatus>(
       converter: (store) => store.state.history.savingStatus,
+      distinct: true,
       builder: (context, savingStatus) => 
         IconButton(
           icon: Icon(
@@ -87,6 +97,23 @@ class EditingToolbar extends StatelessWidget {
       onPressed:() => _exportVideo(context),
       icon: Icon(Icons.save_alt)
     ));
-
   }
+
+  _buildReorderControls(context) => [
+    _buildReorderControl(context, 1, Icons.keyboard_arrow_down, 'Move down'),
+    _buildReorderControl(context, -1, Icons.keyboard_arrow_up, 'Move up'),
+  ];
+
+  _buildReorderControl(context,
+    int relativeMovement, IconData icon, String tooltip) =>
+    StoreConnector<AppState, bool>(
+      converter: (store) => store.state.preview.selectedClip != null,
+      distinct: true,
+      builder: (context, hasClipSelected) => 
+        Tooltip(message: tooltip, child: IconButton(
+          onPressed:
+            hasClipSelected ? () => _moveClip(context, relativeMovement) : null,
+          icon: Icon(icon)
+        )
+    ));
 }
