@@ -104,7 +104,7 @@ class _VideoPreviewState extends State<VideoPreview> {
         pipePath = path;
         _flutterFFmpeg.executeWithArguments(
           buildFFMPEGArgsPreview(widget.project, pipePath,
-            startAtClip: selectedClip),
+            startAtClip: selectedClip == null ? 0 : selectedClip),
         );
         _controller.setNetworkDataSource(path, autoPlay: true);
       });
@@ -123,5 +123,6 @@ class _VideoPreviewState extends State<VideoPreview> {
     super.dispose();
     _controller.dispose();
     pollingTimer.cancel();
+    _flutterFFmpeg.cancel();
   }
 }

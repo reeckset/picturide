@@ -27,7 +27,7 @@ class _ExportPageState extends State<ExportPage> {
   void initState() {
     super.initState();
     Future(() async {
-      final String directory = (await getApplicationDocumentsDirectory()).path;
+      final String directory = (await getTemporaryDirectory()).path;
       final String currentTimestamp =
         DateTime.now().millisecondsSinceEpoch.toString();
       final String videoPath = '$directory/${currentTimestamp}.mp4';

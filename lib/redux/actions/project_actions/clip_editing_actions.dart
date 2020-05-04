@@ -1,9 +1,6 @@
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/project_actions/project_action.dart';
-import 'package:picturide/redux/state/app_state.dart';
-import 'package:redux/redux.dart';
-import 'package:redux_thunk/redux_thunk.dart';
 
 class AddClipAction implements ProjectAction {
   Clip clip;

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
@@ -47,7 +49,7 @@ class Project {
       final AudioTrack currentAudioTrack = 
         audioTracks.isEmpty
         ? AudioTrack(filePath: '', bpm: 1, sourceDuration: double.infinity)
-        : audioTracks[currentAudioTrackIndex];
+        : audioTracks[min(currentAudioTrackIndex, audioTracks.length-1)];
 
       double calculatedDuration = clip.getTempoDurationMultiplier()
         * currentAudioTrack.getBeatSeconds();

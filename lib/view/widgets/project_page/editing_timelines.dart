@@ -138,7 +138,9 @@ class _EditingTimelinesState extends State<EditingTimelines> {
       final Clip clip = clips[i];
       final ClipTimeInfo timeInfo = clipsTimeInfo[i];
 
-      if(timeInfo.isFirstOfTrack() && project.audioTracks.isNotEmpty){
+      if(timeInfo.isFirstOfTrack()
+        && project.audioTracks.length > timeInfo.songIndex){
+        
         timelineContent.add(_clipsTimelineAudioTrackDivider(
           basename(project.audioTracks[timeInfo.songIndex].filePath)
         ));
