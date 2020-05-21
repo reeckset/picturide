@@ -5,6 +5,7 @@ part 'app_preferences.g.dart';
 @JsonSerializable(nullable: true)
 class AppPreferences {
   int createdProjectsCount;
+  //projectPaths -> { filePath: projectName }
   Map<String, String> projectPaths;
 
   AppPreferences({this.createdProjectsCount, this.projectPaths});

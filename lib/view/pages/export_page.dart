@@ -1,10 +1,8 @@
-import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-import 'package:picturide/controller/ffmpeg_builder.dart';
+import 'package:picturide/controller/ffmpeg_build/project_exporter.dart';
 import 'package:picturide/view/widgets/ask_confirm.dart';
 import 'package:picturide/redux/state/app_state.dart';
 
@@ -15,8 +13,8 @@ class ExportPage extends StatefulWidget {
 
 class _ExportPageState extends State<ExportPage> {
 
-  final FlutterFFmpegConfig _flutterFFmpegConfig = FlutterFFmpegConfig();
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
+  final FlutterFFmpegConfig _flutterFFmpegConfig = FlutterFFmpegConfig();
   double progress = 0.0;
   int frameNumber = 0;
   bool hasFinished = false;
@@ -25,15 +23,6 @@ class _ExportPageState extends State<ExportPage> {
   void initState() {
     super.initState();
     Future(() async {
-      exportffmpeg(_getProject(), _flutterFFmpeg)
-      .then((outputPath) async {
-        await GallerySaver.saveVideo(outputPath, albumName:'Picturide');
-        setState((){
-          this.hasFinished = true;
-          File(outputPath).delete();
-        });
-      })
-      .catchError((_){});
       _flutterFFmpegConfig.enableStatisticsCallback(
         (int time,
         int size,
@@ -47,6 +36,9 @@ class _ExportPageState extends State<ExportPage> {
           this.frameNumber = videoFrameNumber;
         });
       });
+      ProjectExporter(_getProject(), _flutterFFmpeg).run()
+        .then((_){ setState((){this.hasFinished = true;});})
+        .catchError((_){});
     });
   }
 

@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:picturide/controller/ffmpeg_builder.dart';
+import 'package:picturide/controller/ffmpeg_build/project_previewer.dart';
 import 'package:picturide/model/project.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:picturide/redux/actions/preview_actions.dart';
@@ -102,10 +102,11 @@ class _VideoPreviewState extends State<VideoPreview> {
 
       _flutterFFmpegConfig.registerNewFFmpegPipe().then((path) {
         pipePath = path;
-        _flutterFFmpeg.executeWithArguments(
-          buildFFMPEGArgsPreview(widget.project, pipePath,
-            startAtClip: selectedClip == null ? 0 : selectedClip),
-        );
+        ProjectPreviewer(
+          widget.project, path,
+          _flutterFFmpeg,
+          startClip: selectedClip == null ? 0 : selectedClip
+        ).run();
         _controller.setNetworkDataSource(path, autoPlay: true);
       });
     });
