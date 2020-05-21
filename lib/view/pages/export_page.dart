@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:gallery_saver/gallery_saver.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:picturide/controller/ffmpeg_builder.dart';
 import 'package:picturide/view/widgets/ask_confirm.dart';
 import 'package:picturide/redux/state/app_state.dart';
@@ -16,7 +15,6 @@ class ExportPage extends StatefulWidget {
 
 class _ExportPageState extends State<ExportPage> {
 
-  static final frameRate = 30;
   final FlutterFFmpegConfig _flutterFFmpegConfig = FlutterFFmpegConfig();
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
   double progress = 0.0;
@@ -27,19 +25,14 @@ class _ExportPageState extends State<ExportPage> {
   void initState() {
     super.initState();
     Future(() async {
-      final String directory = (await getTemporaryDirectory()).path;
-      final String currentTimestamp =
-        DateTime.now().millisecondsSinceEpoch.toString();
-      final String videoPath = '$directory/${currentTimestamp}.mp4';
-      _flutterFFmpeg.executeWithArguments([
-      ...buildFFMPEGArgs(
-        _getProject()
-      ), '-r', frameRate.toString(), '-f', 'mp4', '-y', videoPath])
-      .then((_)=>GallerySaver.saveVideo(videoPath, albumName: 'Picturide')
-      .then((_)=>setState((){
-        this.hasFinished = true;
-        File(videoPath).delete();
-      })))
+      exportffmpeg(_getProject(), _flutterFFmpeg)
+      .then((outputPath) async {
+        await GallerySaver.saveVideo(outputPath, albumName:'Picturide');
+        setState((){
+          this.hasFinished = true;
+          File(outputPath).delete();
+        });
+      })
       .catchError((_){});
       _flutterFFmpegConfig.enableStatisticsCallback(
         (int time,
@@ -57,7 +50,7 @@ class _ExportPageState extends State<ExportPage> {
     });
   }
 
-  _getTotalNumberOfFrames() => (_getProject().getDuration()*frameRate).toInt();
+  _getTotalNumberOfFrames() => (_getProject().getDuration()*30).toInt();
 
   _getProject() => StoreProvider.of<AppState>(context).state.history.project;
 
