@@ -14,35 +14,28 @@ class ExportPage extends StatefulWidget {
 class _ExportPageState extends State<ExportPage> {
 
   final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
-  final FlutterFFmpegConfig _flutterFFmpegConfig = FlutterFFmpegConfig();
-  double progress = 0.0;
-  int frameNumber = 0;
+  double progress = 0;
+  String exportingPhase = '';
   bool hasFinished = false;
   
   @override
   void initState() {
     super.initState();
     Future(() async {
-      _flutterFFmpegConfig.enableStatisticsCallback(
-        (int time,
-        int size,
-        double bitrate,
-        double speed,
-        int videoFrameNumber,
-        double videoQuality,
-        double videoFps){
-        this.setState((){
-          this.progress = videoFrameNumber/_getTotalNumberOfFrames().toDouble();
-          this.frameNumber = videoFrameNumber;
-        });
-      });
-      ProjectExporter(_getProject(), _flutterFFmpeg).run()
+      ProjectExporter(_getProject(), _flutterFFmpeg,
+        progressListener: _progressListener)
+        .run()
         .then((_){ setState((){this.hasFinished = true;});})
         .catchError((_){});
     });
   }
 
-  _getTotalNumberOfFrames() => (_getProject().getDuration()*30).toInt();
+  _progressListener(progressPercentage, exportingPhase) {
+    setState(() {
+      this.progress = progressPercentage;
+      this.exportingPhase = exportingPhase;
+    });
+  }
 
   _getProject() => StoreProvider.of<AppState>(context).state.history.project;
 
@@ -85,7 +78,7 @@ class _ExportPageState extends State<ExportPage> {
         ),
         Padding(
           padding: EdgeInsets.all(10.0),
-          child: Text('Frame $frameNumber of ${_getTotalNumberOfFrames()}'),
+          child: Text(this.exportingPhase),
         ),
       ]
     );
