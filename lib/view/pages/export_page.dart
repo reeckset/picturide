@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:picturide/controller/ffmpeg_build/project_exporter.dart';
-import 'package:picturide/view/widgets/ask_confirm.dart';
+import 'package:picturide/view/widgets/modals/ask_confirm.dart';
 import 'package:picturide/redux/state/app_state.dart';
 
 class ExportPage extends StatefulWidget {

@@ -1,13 +1,12 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 
-import 'package:picturide/model/file_wrapper.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'clip.g.dart';
 
 @JsonSerializable()
-class Clip implements FileWrapper {
+class Clip {
 
   static final int maxTempoDurationPower = 5;
   static final int minTempoDurationPower = -2;
@@ -54,7 +53,6 @@ class Clip implements FileWrapper {
   double getTempoDurationMultiplier() =>
     pow(2.0, tempoDurationPower.toDouble());
 
-  @override
   String getFilePath() => filePath;
 
   //serialization

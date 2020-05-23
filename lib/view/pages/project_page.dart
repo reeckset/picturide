@@ -4,7 +4,7 @@ import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/history_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
-import 'package:picturide/view/widgets/ask_options.dart';
+import 'package:picturide/view/widgets/modals/ask_options.dart';
 import 'package:picturide/view/widgets/project_page/editing_timelines.dart';
 import 'package:picturide/view/widgets/project_page/editing_toolbar.dart';
 import 'package:picturide/view/widgets/video_preview.dart';

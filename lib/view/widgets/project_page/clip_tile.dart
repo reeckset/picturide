@@ -12,7 +12,7 @@ import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dar
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/preview_state.dart';
 import 'package:picturide/view/theme.dart';
-import 'package:picturide/view/widgets/inform_dialog.dart';
+import 'package:picturide/view/widgets/modals/inform_dialog.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class ClipTile extends StatefulWidget {

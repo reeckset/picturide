@@ -4,8 +4,8 @@ import 'package:picturide/controller/app_preferences_controller.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/actions/history_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
-import 'package:picturide/view/widgets/ask_confirm.dart';
-import 'package:picturide/view/widgets/ask_text_input.dart';
+import 'package:picturide/view/widgets/modals/ask_confirm.dart';
+import 'package:picturide/view/widgets/modals/ask_text_input.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);

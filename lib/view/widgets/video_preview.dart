@@ -8,7 +8,7 @@ import 'package:picturide/controller/ffmpeg_build/project_previewer.dart';
 import 'package:picturide/model/project.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:picturide/redux/actions/preview_actions.dart';
-import 'package:picturide/view/widgets/inform_dialog.dart';
+import 'package:picturide/view/widgets/modals/inform_dialog.dart';
 import 'package:picturide/redux/state/app_state.dart';
 
 class VideoPreview extends StatefulWidget {

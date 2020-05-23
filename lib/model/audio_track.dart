@@ -1,10 +1,9 @@
-import 'package:picturide/model/file_wrapper.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'audio_track.g.dart';
 
 @JsonSerializable()
-class AudioTrack implements FileWrapper {
+class AudioTrack {
   int bpm;
   String filePath;
   double sourceDuration;
@@ -15,7 +14,6 @@ class AudioTrack implements FileWrapper {
     this.sourceDuration
   });
 
-  @override
   String getFilePath() => filePath;
 
   double getBeatSeconds(){
