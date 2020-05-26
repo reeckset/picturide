@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/state/app_state.dart';
@@ -40,5 +41,32 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Starting at: 15.1s'), findsOneWidget);
+  });
+
+  testWidgets('Test tap "starting at" button', (WidgetTester tester) async {
+
+    final Clip originalClip = Clip(
+      filePath: 'testFilePath',
+      startTimestamp: 15.1
+    );
+
+    final MockIjkMediaController ijkControllerMock = MockIjkMediaController();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        TestableEditClipPage(originalClip, controller: ijkControllerMock),
+        initialState: createInitialAppState()
+      )
+    );
+
+    final startingAtBtn = find.text('Starting at: 15.1s');
+
+    expect(startingAtBtn, findsOneWidget);
+
+    await tester.tap(startingAtBtn);
+    await tester.pumpAndSettle();
+
+    verify(ijkControllerMock.seekTo(15.1)).called(1);
+
   });
 }

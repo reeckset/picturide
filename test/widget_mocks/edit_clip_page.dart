@@ -4,7 +4,7 @@ import 'package:mockito/mockito.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/view/pages/edit_clip_page.dart';
 
-class _MockIjkMediaController extends Mock implements IjkMediaController {
+class MockIjkMediaController extends Mock implements IjkMediaController {
   @override
   final VideoInfo videoInfo = VideoInfo.fromMap({
     'width': 1920,
@@ -21,16 +21,26 @@ class _MockIjkMediaController extends Mock implements IjkMediaController {
 }
 
 class _TestableEditClipPageState extends EditClipPageState {
+  _TestableEditClipPageState(this.controller);
+
   @override
-  final IjkMediaController controller = _MockIjkMediaController();
+  final IjkMediaController controller;
 
   @override
   previewer(context) { return Container(); }
 }
 
 class TestableEditClipPage extends EditClipPage {
-  TestableEditClipPage(Clip originalClip) : super(originalClip);
+  final MockIjkMediaController controller;
+
+  TestableEditClipPage(
+    Clip originalClip,
+    {this.controller}
+  ) : super(originalClip);
 
   @override
-  _TestableEditClipPageState createState() => _TestableEditClipPageState();
+  _TestableEditClipPageState createState() => 
+    _TestableEditClipPageState(
+      controller == null ? MockIjkMediaController() : controller
+    );
 }
