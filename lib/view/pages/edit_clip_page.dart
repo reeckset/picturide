@@ -15,12 +15,12 @@ class EditClipPage extends StatefulWidget {
 }
 
 class EditClipPageState extends State<EditClipPage> {
-  final IjkMediaController _controller = IjkMediaController();
+  final IjkMediaController controller = IjkMediaController();
   List<Clip> clipsToAdd = [];
 
   _submit(context){
-    _controller.getVideoInfo().then((VideoInfo fileInfo){
-      _controller.stop();
+    controller.getVideoInfo().then((VideoInfo fileInfo){
+      controller.stop();
       Navigator.pop(context, clipsToAdd);
     });
   }
@@ -40,17 +40,16 @@ class EditClipPageState extends State<EditClipPage> {
   @override
   void initState() {
     super.initState();
-    _controller.setNetworkDataSource(
+    controller.setNetworkDataSource(
       widget.originalClip.filePath, autoPlay: true);
     _addClip();
   }
 
   @override
   Widget build(BuildContext context) {
-    final MediaQueryData mediaQuery = MediaQuery.of(context);
     return WillPopScope(
       onWillPop: () async {
-        _controller.stop();
+        controller.stop();
         return true;
       },
       child: Scaffold(
@@ -61,18 +60,13 @@ class EditClipPageState extends State<EditClipPage> {
               _separatorText(basename(
                 widget.originalClip.filePath
                 )),
-              Container(
-                height:  mediaQuery.size.width / StoreProvider
-                  .of<AppState>(context).state.history.project.getAspectRatio(),
-                child: IjkPlayer(
-                  mediaController: _controller,
-                ),),
+              previewer(context),
               _separatorText('Clips:'),
               Expanded(
                 child: ListView(
                   children: [...clipsToAdd.asMap().entries.map(
                     (entry) => EditClip(
-                      entry.value, _controller,
+                      entry.value, controller,
                       onChange: (newClip) => _onClipChange(newClip, entry.key)
                     )
                   ).toList(),
@@ -98,5 +92,15 @@ class EditClipPageState extends State<EditClipPage> {
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 20.0)
     ),);
+  }
+
+  previewer(context) {
+    final MediaQueryData mediaQuery = MediaQuery.of(context);
+    return Container(
+      height:  mediaQuery.size.width / StoreProvider
+        .of<AppState>(context).state.history.project.getAspectRatio(),
+      child: IjkPlayer(
+        mediaController: controller,
+      ),);
   }
 }

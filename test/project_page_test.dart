@@ -10,7 +10,7 @@ import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
 import 'package:picturide/redux/state/preview_state.dart';
 import 'package:picturide/view/pages/project_page.dart';
-import 'utilities/file_picker_mock_handler.dart';
+import 'utilities/platform_channel_mock_handlers.dart';
 import 'utilities/utilities.dart';
 import 'package:mockito/mockito.dart';
 
@@ -57,10 +57,11 @@ void main() {
       for(int i = 0; i < 2; i++){
         await tester.tap(find.byTooltip('Add Video'));
         await tester.pumpAndSettle();
-        //get the Route of the EditClipPage and pop it with a new AudioTrack
+        //get the Route of the EditClipPage and pop it with a new Clip
         verify(navigatorObserver.didPush(captureAny, any))
           .captured.last.navigator.pop(
-            Clip(filePath: 'filepath-VIDEO')
+            [Clip(filePath: 'filepath-VIDEO'),
+            Clip(filePath: 'filepath-VIDEO')]
           );   
         await tester.pumpAndSettle();
       }
@@ -68,7 +69,7 @@ void main() {
 
       //There should be a listview with 2 files' paths
       expect(find.byType(ListView), findsOneWidget);
-      expect(find.text(basename('filepath-VIDEO')), findsNWidgets(2));
+      expect(find.text(basename('filepath-VIDEO')), findsNWidgets(4));
     });
 
     testWidgets('Tracks list adds selected track',
