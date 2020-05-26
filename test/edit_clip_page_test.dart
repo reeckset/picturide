@@ -6,6 +6,7 @@ import 'package:picturide/model/project.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/redux/state/history_state.dart';
 import 'package:picturide/redux/state/preview_state.dart';
+import 'utilities/navigator_pop_listener.dart';
 import 'utilities/utilities.dart';
 import 'widget_mocks/edit_clip_page.dart';
 
@@ -23,14 +24,24 @@ void main() {
       undoActions: [], redoActions: [],
       savingStatus: SavingStatus.saved,
     ), preview: PreviewState.create());
+
+  Future<List<Clip>> getReturnedClips(tester, navigatorObserver) async {
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    final capturedPopValue = await listenForPoppedValue(navigatorObserver);
+    expect(capturedPopValue is List<Clip>, true);
+    final List<Clip> result = capturedPopValue;
+    return result;
+  }
     
   testWidgets('Test edit clip set start', (WidgetTester tester) async {
-
+    final navigatorObserver = MockNavigatorObserver();
     final Clip originalClip = Clip(filePath: 'testFilePath');
 
     await tester.pumpWidget(
       makeTestableWidgetRedux(
         TestableEditClipPage(originalClip),
+        navigatorObserver: navigatorObserver,
         initialState: createInitialAppState()
       )
     );
@@ -41,6 +52,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Starting at: 15.1s'), findsOneWidget);
+
+    final returnedClips = await getReturnedClips(tester, navigatorObserver);
+    expect(returnedClips[0].filePath, 'testFilePath');
+    expect(returnedClips[0].startTimestamp, 15.1);
   });
 
   testWidgets('Test tap "starting at" button', (WidgetTester tester) async {
@@ -67,7 +82,6 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(ijkControllerMock.seekTo(125.8)).called(1);
-
   });
 
     testWidgets('Test tap fine scrub buttons', (WidgetTester tester) async {
@@ -77,11 +91,13 @@ void main() {
       startTimestamp: 10.0
     );
 
+    final navigatorObserver = MockNavigatorObserver();
     final MockIjkMediaController ijkControllerMock = MockIjkMediaController();
 
     await tester.pumpWidget(
       makeTestableWidgetRedux(
         TestableEditClipPage(originalClip, controller: ijkControllerMock),
+        navigatorObserver: navigatorObserver,
         initialState: createInitialAppState()
       )
     );
@@ -103,6 +119,9 @@ void main() {
     verify(ijkControllerMock.seekTo(10.1)).called(1);
     expect(find.text('Starting at: 10.1s'), findsOneWidget);
 
+    final returnedClips = await getReturnedClips(tester, navigatorObserver);
+    expect(returnedClips[0].filePath, 'testFilePath');
+    expect(returnedClips[0].startTimestamp, 10.1);
   });
 
   testWidgets(
@@ -114,11 +133,12 @@ void main() {
       startTimestamp: 10.0
     );
 
-    final MockIjkMediaController ijkControllerMock = MockIjkMediaController();
+    final navigatorObserver = MockNavigatorObserver();
 
     await tester.pumpWidget(
       makeTestableWidgetRedux(
-        TestableEditClipPage(originalClip, controller: ijkControllerMock),
+        TestableEditClipPage(originalClip),
+        navigatorObserver: navigatorObserver,
         initialState: createInitialAppState()
       )
     );
@@ -134,5 +154,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Starting at: 10.0s'), findsNWidgets(3));
+
+    final returnedClips = await getReturnedClips(tester, navigatorObserver);
+    expect(returnedClips.length, 3);
+    for(Clip returnedClip in returnedClips) {
+      expect(returnedClip.startTimestamp, 10.0);
+      expect(returnedClip.filePath, 'testFilePath');
+    }
   });
 }
