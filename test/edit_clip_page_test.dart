@@ -47,7 +47,7 @@ void main() {
 
     final Clip originalClip = Clip(
       filePath: 'testFilePath',
-      startTimestamp: 15.1
+      startTimestamp: 125.8
     );
 
     final MockIjkMediaController ijkControllerMock = MockIjkMediaController();
@@ -59,14 +59,80 @@ void main() {
       )
     );
 
-    final startingAtBtn = find.text('Starting at: 15.1s');
+    final startingAtBtn = find.text('Starting at: 125.8s');
 
     expect(startingAtBtn, findsOneWidget);
 
     await tester.tap(startingAtBtn);
     await tester.pumpAndSettle();
 
-    verify(ijkControllerMock.seekTo(15.1)).called(1);
+    verify(ijkControllerMock.seekTo(125.8)).called(1);
 
+  });
+
+    testWidgets('Test tap fine scrub buttons', (WidgetTester tester) async {
+
+    final Clip originalClip = Clip(
+      filePath: 'testFilePath',
+      startTimestamp: 10.0
+    );
+
+    final MockIjkMediaController ijkControllerMock = MockIjkMediaController();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        TestableEditClipPage(originalClip, controller: ijkControllerMock),
+        initialState: createInitialAppState()
+      )
+    );
+
+    expect(find.text('Starting at: 10.0s'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_left));
+    await tester.pumpAndSettle();
+    verify(ijkControllerMock.seekTo(9.9)).called(1);
+    expect(find.text('Starting at: 9.9s'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_right));
+    await tester.pumpAndSettle();
+    verify(ijkControllerMock.seekTo(10.0)).called(1);
+    expect(find.text('Starting at: 10.0s'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.arrow_right));
+    await tester.pumpAndSettle();
+    verify(ijkControllerMock.seekTo(10.1)).called(1);
+    expect(find.text('Starting at: 10.1s'), findsOneWidget);
+
+  });
+
+  testWidgets(
+    'Test adding another clip from file',
+    (WidgetTester tester) async {
+
+    final Clip originalClip = Clip(
+      filePath: 'testFilePath',
+      startTimestamp: 10.0
+    );
+
+    final MockIjkMediaController ijkControllerMock = MockIjkMediaController();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        TestableEditClipPage(originalClip, controller: ijkControllerMock),
+        initialState: createInitialAppState()
+      )
+    );
+
+    expect(find.text('Starting at: 10.0s'), findsOneWidget);
+
+    await tester.tap(find.text('Add another clip from this file'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Starting at: 10.0s'), findsNWidgets(2));
+
+    await tester.tap(find.text('Add another clip from this file'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Starting at: 10.0s'), findsNWidgets(3));
   });
 }
