@@ -8,7 +8,7 @@ import 'package:picturide/model/clip_time_info.dart';
 
 class ProjectExporter extends FfmpegProjectRunner {
 
-  final FlutterFFmpegConfig _flutterFFmpegConfig = FlutterFFmpegConfig();
+  final FlutterFFmpegConfig _flutterFFmpegConfig;
   String tmpDir;
   String _finalOutputPath;
   final int frameRate = 30;
@@ -18,19 +18,23 @@ class ProjectExporter extends FfmpegProjectRunner {
   int framesInPhase = 0;
 
   ProjectExporter(project, ffmpegController, {this.progressListener})
-    :super(project, ffmpegController);
+    : _flutterFFmpegConfig = (
+      progressListener != null ? FlutterFFmpegConfig() : null),
+    super(project, ffmpegController);
 
   @override
   Map<String, int> getOutputResolution() => project.outputResolution;
 
+  getTmpDirectory() async => (await getTemporaryDirectory()).path;
+
   @override
   Future<void> run() async {
     _registerProgressListener();
-    tmpDir = (await getTemporaryDirectory()).path;
+    tmpDir = await getTmpDirectory();
 
     await forEachClipAsync(_exportClip);
     await _compileAndExportClipsWithAudio();
-    await _saveToGallery();
+    await saveToGallery(_getFinalOutputPath());
     
     forEachClip((i, c, t) => File(_getClipTmpPath(i)).delete());
     File(_getFinalOutputPath()).delete();
@@ -66,6 +70,7 @@ class ProjectExporter extends FfmpegProjectRunner {
       '-map', '0:v', '-map', '[a]',
       ..._getOutputArgs(_getFinalOutputPath())
     ]);
+    File(clipsConcatInput).delete();
   }
 
   _getFinalOutputPath() {
@@ -91,14 +96,13 @@ class ProjectExporter extends FfmpegProjectRunner {
         outpoint ${clipsTimeInfo[i].duration.toString()}\n""";
     });
 
-    await File(listPath)
-      .writeAsString(concatDemuxerList);
+    await File(listPath).writeAsString(concatDemuxerList);
     return listPath;
   }
 
-  _saveToGallery() async {
+  saveToGallery(String tmpPath) async {
     _setPhaseSaveGallery();
-    await GallerySaver.saveVideo(_getFinalOutputPath(), albumName:'Picturide');
+    await GallerySaver.saveVideo(tmpPath, albumName:'Picturide');
   }
 
   _registerProgressListener() {
@@ -120,7 +124,7 @@ class ProjectExporter extends FfmpegProjectRunner {
   }
 
   _removeProgressListener() {
-    _flutterFFmpegConfig.disableStatistics();
+    _flutterFFmpegConfig?.disableStatistics();
   }
 
   _setPhaseExportClip(int i, ClipTimeInfo timeInfo){
