@@ -66,7 +66,8 @@ class ProjectExporter extends FfmpegProjectRunner {
       ..._getAudioTrackInputArgs(),
       '-c:v', 'libx264', '-crf', '18',
       '-filter_complex',
-      '[0:a][1:a]amix=duration=first,pan=stereo|c0<c0+c2|c1<c1+c3[a]',
+      '''[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a0],
+      [a0][1:a]amix=duration=first,pan=stereo|c0<c0+c2|c1<c1+c3[a]''',
       '-map', '0:v', '-map', '[a]',
       ..._getOutputArgs(_getFinalOutputPath())
     ]);
