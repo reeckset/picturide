@@ -4,7 +4,7 @@ class ProjectPreviewer extends FfmpegProjectRunner {
 
   final String outputPath;
 
-  ProjectPreviewer(project, this.outputPath, ffmpegController, {startClip})
+  ProjectPreviewer(project, this.outputPath, ffmpegController, {startClip = 0})
     :super(project, ffmpegController, startClip: startClip);
 
   @override
@@ -23,7 +23,7 @@ class ProjectPreviewer extends FfmpegProjectRunner {
     ];
 
     // for debugging: args.forEach((a) => a.split('\n').forEach((b)=>print(b)));
-    ffmpegController.executeWithArguments(args);
+    return ffmpegController.executeWithArguments(args);
   }
 
   List<String> _getInputArgs() => [
@@ -69,8 +69,8 @@ class ProjectPreviewer extends FfmpegProjectRunner {
     '-r', previewFrameRate.toString(),
     '-s', '${this.outputResolution['w'].toString()}'
       + 'x${this.outputResolution['h'].toString()}',
-    '-f', 'matroska', '-c:a','aac', '-aac_coder', 'fast',
-    '-preset', 'ultrafast', '-tune', 'zerolatency',
+    '-f', 'avi', '-c:a','aac', '-aac_coder', 'fast',
+    '-preset', 'ultrafast',
     '-y', this.outputPath
   ];
 

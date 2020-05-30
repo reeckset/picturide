@@ -3,10 +3,14 @@ import 'dart:io';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:picturide/controller/ffmpeg_build/project_previewer.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/controller/ffmpeg_build/project_exporter.dart';
+
+final String tmpDir = 'test/tmp';
+final String outputPath = '$tmpDir/output.mp4';
 
 class TestableProjectExporter extends ProjectExporter with Mock {
 
@@ -14,14 +18,14 @@ class TestableProjectExporter extends ProjectExporter with Mock {
     : super(project, ffmpegController);
 
   @override
-  getTmpDirectory() => Directory.current.path + '/test/tmp';
+  getTmpDirectory() => Directory.current.path + '/$tmpDir';
 
   @override
   saveToGallery(String tmpPath){
     return File(tmpPath).copy(testableOutputPath());
   }
 
-  testableOutputPath() => 'test/tmp/output.mp4';
+  testableOutputPath() => outputPath;
 }
 
 class FlutterFFmpegMock extends Mock with FlutterFFmpeg {
@@ -39,8 +43,8 @@ getVideoAndAudioInfoFromFile(filePath) async {
   final ProcessResult pr = await Process.run('ffprobe', [
     '-v','quiet','-print_format','json',
     '-show_format','-show_streams','-print_format','json',
-    'test/tmp/output.mp4']);
-
+    filePath]);
+  
   final info = json.decode(pr.stdout)['streams'];
   info[0]['duration'] = double.parse(info[0]['duration']);
   info[1]['duration'] = double.parse(info[1]['duration']);
@@ -49,6 +53,30 @@ getVideoAndAudioInfoFromFile(filePath) async {
 
 expectValueEquivalence(a, b, tolerance) {
   expect((a-b).abs() <= tolerance, true);
+}
+
+checkExportedFile(path, project, {resolution, framerate}) async {
+  expect(File(path).existsSync(), true);
+  final outputInfo = await getVideoAndAudioInfoFromFile(
+    path
+  );
+  final videoInfo = outputInfo[0];
+  final audioInfo = outputInfo[1];
+  final durationDiffTolerance = 0.2;
+  if(resolution == null) resolution = project.outputResolution;
+
+  expectValueEquivalence(
+      videoInfo['duration'],
+      project.getDuration(),
+      durationDiffTolerance);
+  expectValueEquivalence(
+    videoInfo['duration'], 13.33, durationDiffTolerance);
+  expectValueEquivalence(
+      videoInfo['duration'], audioInfo['duration'], durationDiffTolerance
+  );
+  expect(videoInfo['width'], resolution['w']);
+  expect(videoInfo['height'], resolution['h']);
+  expect(videoInfo['r_frame_rate'], '$framerate/1');
 }
 
 void main() {
@@ -76,7 +104,7 @@ void main() {
     Directory('test/tmp').delete(recursive: true);
   });
 
-  test('Test export project',
+  test('Project export',
     () async {
       final FlutterFFmpegMock ffmpeg = FlutterFFmpegMock();
 
@@ -85,27 +113,28 @@ void main() {
       
       await projectExporter.run();
 
-      expect(File(projectExporter.testableOutputPath()).existsSync(), true);
-      final outputInfo = await getVideoAndAudioInfoFromFile(
-        projectExporter.testableOutputPath()
+      await checkExportedFile(
+        projectExporter.testableOutputPath(),
+        defaultProject,
+        framerate: 30
       );
-      final videoInfo = outputInfo[0];
-      final audioInfo = outputInfo[1];
-      final durationDiffTolerance = 0.1;
-
-      expectValueEquivalence(
-          videoInfo['duration'],
-          defaultProject.getDuration(),
-          durationDiffTolerance);
-      expectValueEquivalence(
-        videoInfo['duration'], 13.33, durationDiffTolerance);
-      expectValueEquivalence(
-          videoInfo['duration'], audioInfo['duration'], durationDiffTolerance
-      );
-      expect(videoInfo['width'], defaultProject.outputResolution['w']);
-      expect(videoInfo['height'], defaultProject.outputResolution['h']);
-      expect(videoInfo['r_frame_rate'], '30/1');
     },
     timeout: Timeout(Duration(seconds: 60))
   );
+
+  test('Previewer', () async {
+    final FlutterFFmpegMock ffmpeg = FlutterFFmpegMock();
+
+    final projectPreviewer =
+      ProjectPreviewer(defaultProject, outputPath, ffmpeg);
+    
+    await projectPreviewer.run();
+
+    await checkExportedFile(
+      outputPath,
+      defaultProject,
+      resolution: projectPreviewer.getOutputResolution(),
+      framerate: 24
+    );
+  });
 }
