@@ -32,6 +32,9 @@ class FlutterFFmpegMock extends Mock with FlutterFFmpeg {
   @override
   Future<int> executeWithArguments(List<String> arguments) async {   
     final process = await Process.start('ffmpeg', arguments, runInShell: true);
+    // for debug:
+    // process.stderr.transform(utf8.decoder).listen((event){ print(event); });
+    // process.stdout.transform(utf8.decoder).listen((event){ print(event); });
     return await process.exitCode;
   }
 }
@@ -101,7 +104,7 @@ void main() {
   });
 
   tearDownAll((){
-    Directory('test/tmp').delete(recursive: true);
+    //Directory('test/tmp').delete(recursive: true);
   });
 
   test('Project export',
@@ -137,4 +140,33 @@ void main() {
       framerate: 24
     );
   });
+
+  test('Previewer with start clip', () async {
+    final FlutterFFmpegMock ffmpeg = FlutterFFmpegMock();
+
+    final projectPreviewer =
+      ProjectPreviewer(defaultProject, outputPath, ffmpeg, startClip: 3);
+    
+    await projectPreviewer.run();
+
+    expect(File(outputPath).existsSync(), true);
+
+    final outputInfo = await getVideoAndAudioInfoFromFile(
+      outputPath
+    );
+    final videoInfo = outputInfo[0];
+    final audioInfo = outputInfo[1];
+    final durationDiffTolerance = 0.2;
+
+    expectValueEquivalence(
+        videoInfo['duration'],
+        defaultProject.getDuration()-defaultProject.getClipsTimeInfo()[3].startTime,
+        durationDiffTolerance);
+    expectValueEquivalence(
+        videoInfo['duration'], audioInfo['duration'], durationDiffTolerance
+    );
+    expect(videoInfo['width'], projectPreviewer.getOutputResolution()['w']);
+    expect(videoInfo['height'], projectPreviewer.getOutputResolution()['h']);
+    expect(videoInfo['r_frame_rate'], '24/1');
+    });
 }

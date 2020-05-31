@@ -71,7 +71,8 @@ class ProjectPreviewer extends FfmpegProjectRunner {
       + 'x${this.outputResolution['h'].toString()}',
     '-f', 'avi', '-c:a','aac', '-aac_coder', 'fast',
     '-preset', 'ultrafast',
-    '-y', this.outputPath
+    '-y', this.outputPath,
+    '-async', '1', '-vsync', '1',
   ];
 
   String _getAudioMixFilter() {
