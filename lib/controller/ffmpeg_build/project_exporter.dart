@@ -53,6 +53,8 @@ class ProjectExporter extends FfmpegProjectRunner {
       ...getClipInputArgs(clip, timeInfo),
       '-filter_complex', getClipFilter(0, clip),
       '-map', '[v0]', '-map', '0:a',
+      '-video_track_timescale', '29971', '-ac', '1',
+      '-fflags', '+genpts', '-async', '1',
       ..._getOutputArgs(_getClipTmpPath(i)),
     ]);
   }
