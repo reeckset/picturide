@@ -43,7 +43,7 @@ class _VideoPreviewState extends State<VideoPreview> {
         IjkOption(IjkOptionCategory.player, 'framedrop', 1),
       ].toSet());
     _controller.ijkStatusStream.listen((IjkStatus status) {
-      if(status == IjkStatus.complete){
+      if(status == IjkStatus.complete || status == IjkStatus.pause){
         _controller.reset();
       }
       this.setState((){ playerStatus = status; });
@@ -71,15 +71,15 @@ class _VideoPreviewState extends State<VideoPreview> {
       mediaController: _controller,
       controllerWidgetBuilder: 
         (mediaController) {
-          return this.playerStatus != IjkStatus.playing 
+          return this.playerStatus != IjkStatus.playing
           ? Center(
             child: IconButton(
               icon: Icon(Icons.play_arrow),
               onPressed: _play,
             )
           ) : IconButton(
-              icon: Icon(Icons.play_arrow),
-              onPressed: () => _play,
+              icon: Icon(Icons.stop),
+              onPressed: _stop,
             );
         }
     );
@@ -110,6 +110,13 @@ class _VideoPreviewState extends State<VideoPreview> {
         _controller.setNetworkDataSource(path, autoPlay: true);
       });
     });
+  }
+
+  _stop() async {
+    try{
+      await _controller.pause();
+      await _flutterFFmpeg.cancel();
+    }catch(_){}
   }
 
   Future<void> _showNoSoundAlert() async {
