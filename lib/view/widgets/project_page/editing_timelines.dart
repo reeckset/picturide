@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import 'package:picturide/redux/actions/project_actions/clip_editing_actions.dar
 import 'package:picturide/redux/actions/project_actions/sound_editing_actions.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/view/theme.dart';
+import 'package:picturide/view/widgets/modals/ask_video_files.dart';
 import 'package:picturide/view/widgets/project_page/clip_tile.dart';
 
 class EditingTimelines extends StatefulWidget { 
@@ -20,9 +23,6 @@ class EditingTimelines extends StatefulWidget {
 
 class _EditingTimelinesState extends State<EditingTimelines> {
 
-  Future<Map<String, String>> _getVideoFiles() async =>
-    (await FilePicker.getMultiFilePath(type: FileType.video));
-
   _getEditedClips(context, clip) async =>
     await Navigator.of(context)
     .pushNamed('/edit_clip_page', arguments:clip);
@@ -30,8 +30,8 @@ class _EditingTimelinesState extends State<EditingTimelines> {
   _askAudioTrack(context) async => Navigator.of(context).pushNamed('/add_audio_page');
 
   _addVideoClip(context) {
-    _getVideoFiles().then((Map<String, String> paths) async {
-      for(String path in paths.values){
+    askVideoFiles().then((List<String> paths) async {
+      for(String path in paths){
         final clips = await _getEditedClips(context, Clip(filePath: path));
         if(clips != null){
           for(var clip in clips){
