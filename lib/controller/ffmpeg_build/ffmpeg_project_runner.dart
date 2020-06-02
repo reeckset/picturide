@@ -40,13 +40,13 @@ abstract class FfmpegProjectRunner {
 
   forEachClip(callBack) {
     for(int i = startClip; i <= endClip; i++) {
-      callBack(i, this.project.clips[i], clipsTimeInfo[i]);
+      callBack(i-startClip, this.project.clips[i], clipsTimeInfo[i]);
     }
   }
 
   forEachClipAsync(callBack) async {
     for(int i = startClip; i <= endClip; i++) {
-      await callBack(i, this.project.clips[i], clipsTimeInfo[i]);
+      await callBack(i-startClip, this.project.clips[i], clipsTimeInfo[i]);
     }
   }
 
