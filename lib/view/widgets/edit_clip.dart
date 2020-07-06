@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:picturide/model/clip.dart';
+import 'package:picturide/view/theme.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class EditClip extends StatefulWidget {
@@ -18,13 +19,18 @@ class EditClip extends StatefulWidget {
 }
 
 class EditClipState extends State<EditClip> {
+  final _volumeSliderScale = 500; //how far down the volume slider is 1.00x
+  final _maxVolume = 10;
+
   double startTimestamp = 0.0;
+  double volume = 1;
 
   _generateNewClip() async {
     final VideoInfo fileInfo = await _getController().getVideoInfo();
     final Clip editedClip = Clip.fromClip(widget.originalClip);
     editedClip.startTimestamp = startTimestamp;
     editedClip.sourceDuration = fileInfo.duration;
+    editedClip.volume = volume;
     return editedClip;
   }
 
@@ -36,11 +42,42 @@ class EditClipState extends State<EditClip> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    this.setState(() {
+      this.startTimestamp = widget.originalClip.startTimestamp;
+      this.volume = widget.originalClip.volume;
+    });
+    this._setStart(position: widget.originalClip.startTimestamp);
+  }
+
   _setStart({double position}){
     position = position == null
       ? _getController().videoInfo.currentPosition
       : position;
     this.setState(() {startTimestamp = position; });
+  }
+
+  void _setVolume(double volume){
+    this.setState(() { this.volume = volume; });
+  }
+
+  _getSliderVolume() =>
+    max(0.0, 
+      log((this.volume + (_maxVolume/_volumeSliderScale))
+        / (1+1/_volumeSliderScale)
+        * (_volumeSliderScale/_maxVolume))
+      / log(_volumeSliderScale)
+    );
+
+  _setVolumeFromSlider(double volume){
+    this._setVolume(num.parse(
+      (pow(_volumeSliderScale, volume)
+        / (_volumeSliderScale/_maxVolume)
+        * (1+1/_volumeSliderScale)
+      - _maxVolume/_volumeSliderScale)
+    .toStringAsFixed(2)));
   }
 
   _scrub({bool forward = true}){
@@ -67,51 +104,69 @@ class EditClipState extends State<EditClip> {
   _getController() => widget.playerController;
 
   @override
-  void initState() {
-    super.initState();
-    this.setState(() {
-      this.startTimestamp = widget.originalClip.startTimestamp;
-    });
-    this._setStart(position: widget.originalClip.startTimestamp);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return this._getFilePath() != null ? Column(children: [
-      _setStartControls(),
-    ]) : Text('');
+    return this._getFilePath() != null ? ExpansionTile(
+      backgroundColor: lightBackgroundColor,
+      leading: _buildStartThumbnail(),
+      title: Text('Starting at: ${startTimestamp.toStringAsFixed(1)}s'),
+      children: _editingControls(),
+      initiallyExpanded: true,
+    ) : Text('');
   }
 
-  _setStartControls(){
+  List<Widget> _editingControls() => [
+    _startControls(),
+    _volumeControls(),
+  ];
+
+  _startControls(){
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildStartThumbnail(),
         IconButton(
           icon: Icon(Icons.arrow_left),
           onPressed: ()=>_scrub(forward:false),
         ),
         FlatButton(
           padding: EdgeInsets.all(10.0),
-          child: Text('Starting at: ${startTimestamp.toStringAsFixed(1)}s'),
+          child: Text('Go to clip start'),
           onPressed: () => _getController().seekTo(this.startTimestamp),
         ),
-        IconButton(icon: Icon(Icons.shutter_speed), onPressed: _setStart,),
+        RaisedButton(child: Text('Set start'), onPressed: _setStart,),
         IconButton(icon: Icon(Icons.arrow_right), onPressed: _scrub,),
       ]
     ,);
   }
 
+  _volumeControls() => Padding(
+    padding: EdgeInsets.symmetric(horizontal: 10.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        IconButton(
+          icon: Icon(volume > 0 ? Icons.volume_up : Icons.volume_off),
+          onPressed: ()=>volume > 0 ? _setVolume(0) : _setVolume(1)),
+        Text('${this.volume.toStringAsFixed(2)}x'),
+        Slider(
+          onChanged: _setVolumeFromSlider,
+          value: _getSliderVolume(),
+          min: 0,
+          max: 1,
+        ),
+      ]));
+
+  
+
   _buildStartThumbnail(){
     return FutureBuilder(
       future: _getThumbnail(this.startTimestamp),
       builder: (context, startThumbnail) => 
-        Expanded(child:Container(
+        Container(
           height: 50.0,
           child: startThumbnail.data != null
             ? Image.memory(startThumbnail.data, scale: 1.0)
             : Text(''),
         )
-    ));
+    );
   }
 }

@@ -18,6 +18,9 @@ void main() {
     );
   });
 
+  final getSlider = () => find.byType(Slider)
+      .evaluate().single.widget as Slider;
+
   createInitialAppState() =>
     AppState(history: HistoryState(
       project: Project.create('Name'),
@@ -48,7 +51,7 @@ void main() {
 
     expect(find.text('Starting at: 0.0s'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.shutter_speed));
+    await tester.tap(find.text('Set start'));
     await tester.pumpAndSettle();
 
     expect(find.text('Starting at: 15.1s'), findsOneWidget);
@@ -58,7 +61,8 @@ void main() {
     expect(returnedClips[0].startTimestamp, 15.1);
   });
 
-  testWidgets('Test tap "starting at" button', (WidgetTester tester) async {
+  testWidgets('Test tap "Go to clip start" button',
+    (WidgetTester tester) async {
 
     final Clip originalClip = Clip(
       filePath: 'testFilePath',
@@ -74,11 +78,12 @@ void main() {
       )
     );
 
-    final startingAtBtn = find.text('Starting at: 125.8s');
+    final goToStartBtn = find.text('Go to clip start');
 
-    expect(startingAtBtn, findsOneWidget);
+    expect(find.text('Starting at: 125.8s'), findsOneWidget);
+    expect(goToStartBtn, findsOneWidget);
 
-    await tester.tap(startingAtBtn);
+    await tester.tap(goToStartBtn);
     await tester.pumpAndSettle();
 
     verify(ijkControllerMock.seekTo(125.8)).called(1);
@@ -159,6 +164,132 @@ void main() {
     expect(returnedClips.length, 3);
     for(Clip returnedClip in returnedClips) {
       expect(returnedClip.startTimestamp, 10.0);
+      expect(returnedClip.filePath, 'testFilePath');
+    }
+  });
+
+  testWidgets(
+    'Test volume slider toggle',
+    (WidgetTester tester) async {
+
+    final Clip originalClip = Clip(
+      filePath: 'testFilePath'
+    );
+
+    final navigatorObserver = MockNavigatorObserver();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        TestableEditClipPage(originalClip),
+        navigatorObserver: navigatorObserver,
+        initialState: createInitialAppState()
+      )
+    );
+
+
+    expect(find.text('1.00x'), findsOneWidget);
+    expect(find.byType(Slider), findsOneWidget);
+    expect(find.byIcon(Icons.volume_up), findsOneWidget);
+    expect(find.byIcon(Icons.volume_off), findsNothing);
+
+    final originalSliderValue = getSlider().value;
+
+    /* volume is not linear.
+     * 0.5 slider value should correspond to
+     * less than 1.00x in a scale from 0 to 10 */ 
+    expect(getSlider().value > 0.5, true); 
+
+    await tester.tap(find.byIcon(Icons.volume_up));
+    await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
+
+    expect(find.text('0.00x'), findsOneWidget);
+    expect(find.byIcon(Icons.volume_up), findsNothing);
+    expect(find.byIcon(Icons.volume_off), findsOneWidget);
+    expect(getSlider().value, 0); 
+
+    await tester.tap(find.byIcon(Icons.volume_off));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1.00x'), findsOneWidget);
+    expect(find.byIcon(Icons.volume_up), findsOneWidget);
+    expect(find.byIcon(Icons.volume_off), findsNothing);
+    expect(getSlider().value, originalSliderValue); 
+
+    final returnedClips = await getReturnedClips(tester, navigatorObserver);
+    expect(returnedClips.length, 1);
+    for(Clip returnedClip in returnedClips) {
+      expect(returnedClip.volume, 1.0);
+      expect(returnedClip.filePath, 'testFilePath');
+    }
+  });
+
+  testWidgets(
+    'Test volume max',
+    (WidgetTester tester) async {
+
+    final Clip originalClip = Clip(
+      filePath: 'testFilePath',
+      volume: 10.0,
+    );
+
+    final navigatorObserver = MockNavigatorObserver();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        TestableEditClipPage(originalClip),
+        navigatorObserver: navigatorObserver,
+        initialState: createInitialAppState()
+      )
+    );
+
+    expect(find.text('10.00x'), findsOneWidget);
+    expect(find.byType(Slider), findsOneWidget);
+    expect(find.byIcon(Icons.volume_up), findsOneWidget);
+    expect(find.byIcon(Icons.volume_off), findsNothing);
+ 
+    expect(getSlider().value, getSlider().max); 
+
+    final returnedClips = await getReturnedClips(tester, navigatorObserver);
+    expect(returnedClips.length, 1);
+    for(Clip returnedClip in returnedClips) {
+      expect(returnedClip.volume, 10.0);
+      expect(returnedClip.filePath, 'testFilePath');
+    }
+  });
+
+  testWidgets(
+    'Test volume min',
+    (WidgetTester tester) async {
+
+    final Clip originalClip = Clip(
+      filePath: 'testFilePath',
+      volume: 10.0,
+    );
+
+    final navigatorObserver = MockNavigatorObserver();
+
+    await tester.pumpWidget(
+      makeTestableWidgetRedux(
+        TestableEditClipPage(originalClip),
+        navigatorObserver: navigatorObserver,
+        initialState: createInitialAppState()
+      )
+    );
+
+    await tester.tap(find.byIcon(Icons.volume_up));
+    await tester.pumpAndSettle();
+
+    expect(find.text('0.00x'), findsOneWidget);
+    expect(find.byIcon(Icons.volume_up), findsNothing);
+    expect(find.byIcon(Icons.volume_off), findsOneWidget);
+    expect(getSlider().value, 0);
+    expect(getSlider().value, getSlider().min); 
+
+    final returnedClips = await getReturnedClips(tester, navigatorObserver);
+    expect(returnedClips.length, 1);
+    for(Clip returnedClip in returnedClips) {
+      expect(returnedClip.volume, 0.0);
       expect(returnedClip.filePath, 'testFilePath');
     }
   });

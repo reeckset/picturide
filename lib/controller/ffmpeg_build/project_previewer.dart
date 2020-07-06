@@ -87,7 +87,7 @@ class ProjectPreviewer extends FfmpegProjectRunner {
   String _getConcatFilter(){
     String result = '';
     forEachClip((i, clip, timeInfo) {
-      result += '[v$i][$i:a]';
+      result += '[v$i][a$i]';
     });
     return result + 'concat=n=${getNumberOfClips()}:v=1:a=1[cv][ca];';
   }

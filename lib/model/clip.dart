@@ -15,11 +15,14 @@ class Clip {
   double startTimestamp;
   String filePath;
   double sourceDuration;
+  @JsonKey(defaultValue: 1.0)
+  double volume;
 
   Clip({@required this.filePath,
     this.tempoDurationPower = 1,
     this.startTimestamp = 0.0,
     this.sourceDuration,
+    this.volume = 1.0,
   });
 
   Clip.fromClip(Clip c){
@@ -27,6 +30,7 @@ class Clip {
     this.filePath = c.filePath;
     this.startTimestamp = c.startTimestamp;
     this.sourceDuration = c.sourceDuration;
+    this.volume = c.volume;
   }
 
   incrementTempoDuration(){

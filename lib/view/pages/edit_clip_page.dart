@@ -64,7 +64,7 @@ class EditClipPageState extends State<EditClipPage> {
               _separatorText('Clips:'),
               Expanded(
                 child: ListView(
-                  children: [...clipsToAdd.asMap().entries.map(
+                  children: <Widget>[...clipsToAdd.asMap().entries.map(
                     (entry) => EditClip(
                       entry.value, controller,
                       onChange: (newClip) => _onClipChange(newClip, entry.key)

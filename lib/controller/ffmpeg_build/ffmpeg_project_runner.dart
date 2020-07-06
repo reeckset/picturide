@@ -78,7 +78,7 @@ abstract class FfmpegProjectRunner {
       :force_original_aspect_ratio=decrease,setsar=1,
       pad=${outputResolution['w']}:${outputResolution['h']}:(ow-iw)/2:(oh-ih)/2
       ,setpts=PTS-STARTPTS
-      [v$i]""";
+      [v$i];[$i:a]volume=${clip.volume}[a$i]""";
   }
 
 }
