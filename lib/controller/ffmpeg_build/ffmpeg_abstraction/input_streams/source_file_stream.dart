@@ -1,47 +1,46 @@
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_stream.dart';
 
 class SourceFileStream extends InputStream {
-  final String sourceFile;
-  int startTimeSeconds = 0;
+  final InputFile sourceFile;
   final List<dynamic> streamsInfo;
-  static final FlutterFFprobe flutterFFprobe = FlutterFFprobe();
 
-  bool _hasVideoStream = false;
-  bool _hasAudioStream = false;
- 
-
-  static importAsync(String sourceFile, {FlutterFFprobe probeClient}) async {
-    if(probeClient == null) probeClient = flutterFFprobe;
+  static importAsync(InputFile sourceFile,
+    {FlutterFFprobe probeClient,
+    
+    }
+  ) async {
+    if(probeClient == null) probeClient = InputStream.flutterFFprobe;
 
     final Map<String, dynamic> probeInfo =
-      await probeClient.getMediaInformation(sourceFile);
+      await probeClient.getMediaInformation(sourceFile.file);
 
-    return SourceFileStream.fromStreamsInfo(sourceFile,
-      probeInfo['streams']);
+    return SourceFileStream.fromStreamsInfo(
+      sourceFile,
+      probeInfo['streams']
+    );
   } 
 
   SourceFileStream.fromStreamsInfo(
     this.sourceFile,
-    this.streamsInfo,
+    this.streamsInfo
   ){
     streamsInfo.forEach((streamInfo) { 
-      _hasVideoStream = _hasVideoStream || streamInfo['type'] == 'video';
-      _hasAudioStream = _hasAudioStream || streamInfo['type'] == 'audio';
+      hasVideo = hasVideo || streamInfo['type'] == 'video';
+      hasAudio = hasAudio || streamInfo['type'] == 'audio';
     });
   }
 
   @override
   List<String> buildInputArgs() => [
-    '-ss', startTimeSeconds.toString(),
-    '-i', sourceFile
+    ...(sourceFile.startTimeSeconds != null
+      ? ['-ss', sourceFile.startTimeSeconds.toString()]
+      : []),
+    ...(sourceFile.durationSeconds != null
+      ? ['-t', sourceFile.durationSeconds.toString()]
+      : []),
+    ...(sourceFile.loop ? ['-stream_loop', '-1'] : []),
+    '-i', sourceFile.file
   ];
-
-  @override
-  String getAudioStreamLabel() => _hasAudioStream ? '$inputIndex:a' : null;
-
-  @override
-  String getVideoStreamLabel() => _hasVideoStream ? '$inputIndex:v' : null;
-  
-
 }

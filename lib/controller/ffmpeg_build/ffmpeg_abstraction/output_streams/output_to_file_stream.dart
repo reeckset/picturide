@@ -8,7 +8,7 @@ class OutputToFileStream extends OutputStream {
     :super(streamToOutput);
 
   @override
-  List<String> buildArgs() => [
+  List<String> appendArgs() => [
     ...replace ? ['-y'] : [],
     file,
   ];

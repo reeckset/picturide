@@ -11,10 +11,17 @@ abstract class OutputStream extends FFMPEGStream {
         'Output Stream has no source stream'
       );
     }
-    return [...sourceStream.buildOutputArgs(), ...buildArgs()];
+    return [
+      ...prependArgs(),
+      ...sourceStream.buildOutputArgs(),
+      ...appendArgs()
+    ];
   }
 
   // to add an output argument, this should be overriden
-  List<String> buildArgs() => [];
+  List<String> appendArgs() => [];
+
+  // to add an output argument to the beggining, this should be overriden
+  List<String> prependArgs() => [];
 
 }
