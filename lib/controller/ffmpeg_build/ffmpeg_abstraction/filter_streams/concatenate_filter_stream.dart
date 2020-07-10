@@ -4,14 +4,12 @@ import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart
 class ConcatenateFilterStream extends MultiInputFilterStream {
 
   ConcatenateFilterStream(List<FFMPEGStream> sourceStreams)
-    :super(sourceStreams){
-      if(sourceStreams.length < 2){
-        throw Exception('Concatenate needs at least two source streams');
-      }
-    }
+    :super(sourceStreams);
 
   @override
   buildFilter() {
+    ensureVideoStream();
+    ensureAudioStream();
     String filter = '';
     // createFilterInputs
     for(final sourceStream in sourceStreams) {
@@ -25,22 +23,10 @@ class ConcatenateFilterStream extends MultiInputFilterStream {
   }
  
   @override
-  String getVideoStreamLabel() {
-    String label = '';
-    for(final sourceStream in sourceStreams) {
-      label += sourceStream.getVideoStreamLabel() + '-';
-    }
-    return label + 'concatenate';
-  }
+  String getVideoStreamLabel() => getDefaultVideoStreamLabel() + 'concatenate';
 
   @override
-  String getAudioStreamLabel() {
-    String label = '';
-    for(final sourceStream in sourceStreams) {
-      label += sourceStream.getAudioStreamLabel() + '-';
-    }
-    return label + 'concatenate';
-  }
+  String getAudioStreamLabel() => getDefaultAudioStreamLabel() + 'concatenate';
 
   @override
   List<String> buildInputArgs() => sourceStreams.fold([],

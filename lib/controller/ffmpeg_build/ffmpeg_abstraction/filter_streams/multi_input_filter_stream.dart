@@ -5,7 +5,11 @@ abstract class MultiInputFilterStream extends FilterStream {
 
   final List<FFMPEGStream> sourceStreams;
 
-  MultiInputFilterStream(this.sourceStreams) : super(null);
+  MultiInputFilterStream(this.sourceStreams) : super(null){
+    if(sourceStreams.length < 2){
+      throw Exception('This filter needs at least two source streams');
+    }
+  }
   
   @override
   int updateInputIndicesAndReturnNext(int newStartIndex){
@@ -41,4 +45,34 @@ abstract class MultiInputFilterStream extends FilterStream {
         acc.addAll(s.buildOutputArgs());
         return acc;
       }); 
+
+  String getDefaultAudioStreamLabel() {
+    String label = '';
+    for(final sourceStream in sourceStreams) {
+      label += sourceStream.getAudioStreamLabel() + '-';
+    }
+    return label;
+  }
+
+  String getDefaultVideoStreamLabel() {
+    String label = '';
+    for(final sourceStream in sourceStreams) {
+      label += sourceStream.getVideoStreamLabel() + '-';
+    }
+    return label;
+  }
+
+  @override
+  ensureVideoStream(){
+    if(!sourceStreams.every((stream) => stream.hasVideoStream())){
+      throw Exception('Trying to apply video filter to a stream with no video');
+    }
+  }
+
+  @override
+  ensureAudioStream(){
+    if(!sourceStreams.every((stream) => stream.hasAudioStream())){
+      throw Exception('Trying to apply audio filter to a stream with no audio');
+    }
+  }
 }
