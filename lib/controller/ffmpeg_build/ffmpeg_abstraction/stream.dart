@@ -4,8 +4,9 @@ abstract class FFMPEGStream {
 
   FFMPEGStream({this.sourceStream});
 
-  build() {
-    final filterComplex = buildFilterComplex();
+  List<String> build() {
+    sourceStream.updateInputIndicesAndReturnNext(0);
+    final filterComplex = buildFilterComplex().replaceAll(RegExp(r'\n|\s'), '');
     return[
       ...buildInputArgs(),
       ...filterComplex != ''
@@ -49,12 +50,24 @@ abstract class FFMPEGStream {
     return sourceStream.buildMappingArgs();
   }
 
+  bool hasVideoStream(){
+    return getVideoStreamLabel() != null;
+  }
+
+  bool hasAudioStream(){
+    return getAudioStreamLabel() != null;
+  }
+
   String getVideoStreamLabel() {
     return sourceStream.getVideoStreamLabel();
   }
 
   String getAudioStreamLabel() {
     return sourceStream.getAudioStreamLabel();
+  }
+
+  int updateInputIndicesAndReturnNext(int newStartIndex) {
+    return sourceStream.updateInputIndicesAndReturnNext(newStartIndex);
   }
 
 }

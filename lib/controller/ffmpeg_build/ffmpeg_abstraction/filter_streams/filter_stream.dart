@@ -11,18 +11,35 @@ abstract class FilterStream extends FFMPEGStream {
         'Filter Stream has no source stream'
       );
     }
-    return sourceStream.buildFilterComplex() + buildFilter();
+    final currentFilterComplex = sourceStream.buildFilterComplex();
+
+    return (currentFilterComplex.isNotEmpty
+        ? '$currentFilterComplex;'
+        : '')
+      + buildFilter();
   }
 
   String buildFilter();
 
   @override
   List<String> buildMappingArgs() => [
-    ...sourceStream.getVideoStreamLabel() != null
-      ? ['-map', '[${sourceStream.getVideoStreamLabel()}]']
+    ...hasVideoStream()
+      ? ['-map', '[${getVideoStreamLabel()}]']
       : [],
-    ...sourceStream.getAudioStreamLabel() != null
-      ? ['-map', '[${sourceStream.getAudioStreamLabel()}]']
+    ...hasAudioStream()
+      ? ['-map', '[${getAudioStreamLabel()}]']
       : [],
   ];
+
+  ensureVideoStream(){
+    if(!sourceStream.hasVideoStream()){
+      throw Exception('Trying to apply video filter to a stream with no video');
+    }
+  }
+
+  ensureAudioStream(){
+    if(!sourceStream.hasAudioStream()){
+      throw Exception('Trying to apply audio filter to a stream with no audio');
+    }
+  }
 }

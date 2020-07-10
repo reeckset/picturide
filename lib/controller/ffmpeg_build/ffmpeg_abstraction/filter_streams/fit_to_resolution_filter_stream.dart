@@ -8,6 +8,7 @@ class FitToResolutionFilterStream extends FilterStream {
 
   @override
   buildFilter() {
+    ensureVideoStream();
     return '''[${sourceStream.getVideoStreamLabel()}]
       scale=$width:$height
       :force_original_aspect_ratio=decrease,setsar=1,
