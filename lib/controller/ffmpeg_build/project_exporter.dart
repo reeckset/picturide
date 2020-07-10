@@ -3,7 +3,15 @@ import 'dart:io';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/format_audio_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/mix_audio_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/concat_input_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/source_file_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/add_output_properties_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/output_to_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_project_runner.dart';
+import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/clip_time_info.dart';
 
 class ProjectExporter extends FfmpegProjectRunner {
@@ -32,48 +40,65 @@ class ProjectExporter extends FfmpegProjectRunner {
     _registerProgressListener();
     tmpDir = await getTmpDirectory();
 
-    await forEachClipAsync(_exportClip);
+    await mapActiveClipsAsync(_exportClip);
     await _compileAndExportClipsWithAudio();
     await saveToGallery(_getFinalOutputPath());
     
-    forEachClip((i, c, t) => File(_getClipTmpPath(i)).delete());
+    mapActiveClips((i, c, t) => File(_getClipTmpPath(i)).delete());
     File(_getFinalOutputPath()).delete();
     _removeProgressListener();
   }
 
-  List<String> _getOutputArgs(path) => [
-    '-r', frameRate.toString(), '-f', 'mp4', '-y', path
+  List<String> _getOutputArgs() => [
+    '-r', frameRate.toString(), '-f', 'mp4'
   ];
 
   String _getClipTmpPath(i) => '$tmpDir/clip$i.mp4';
 
-  _exportClip(i, clip, timeInfo) async {
+  _exportClip(i, Clip clip, timeInfo) async {
+    final stream = OutputToFileStream(
+      _getClipTmpPath(i),
+      AddOutputPropertiesStream(
+        ['-video_track_timescale', '29971',
+        '-ac', '1', '-fflags', '+genpts',
+        '-async', '1', ..._getOutputArgs()],
+        await getClipStream(clip, timeInfo),
+      ),
+      replace: true,
+    );
+
     _setPhaseExportClip(i, timeInfo);
-    await ffmpegController.executeWithArguments([
-      ...getClipInputArgs(clip, timeInfo),
-      '-filter_complex', getClipFilter(0, clip),
-      '-map', '[v0]', '-map', '[a0]',
-      '-video_track_timescale', '29971', '-ac', '1',
-      '-fflags', '+genpts', '-async', '1',
-      ..._getOutputArgs(_getClipTmpPath(i)),
-    ]);
+
+    await ffmpegController.executeWithArguments(await stream.build());
   }
 
   _compileAndExportClipsWithAudio() async {
     _setPhaseCompileClips();
-    final String clipsConcatInput = await _makeConcatInputFile();
-    await ffmpegController.executeWithArguments([
-      '-f', 'concat', '-safe', '0', 
-      '-i', clipsConcatInput,
-      ..._getAudioTrackInputArgs(),
-      '-c:v', 'libx264', '-crf', '18',
-      '-filter_complex',
-      '''[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[a0],
-      [a0][1:a]amix=duration=first,pan=stereo|c0<c0+c2|c1<c1+c3[a]''',
-      '-map', '0:v', '-map', '[a]',
-      ..._getOutputArgs(_getFinalOutputPath())
-    ]);
-    File(clipsConcatInput).delete();
+
+    final stream = OutputToFileStream(
+      _getFinalOutputPath(),
+      AddOutputPropertiesStream(
+        ['-c:v', 'libx264', '-crf', '18', ..._getOutputArgs()],
+        MixAudioFilterStream([
+          FormatAudioFilterStream(
+            await ConcatInputStream.importAsync(
+              mapActiveClips<InputFile>((i, clip, timeInfo) =>
+                InputFile(
+                  _getClipTmpPath(i),
+                  durationSeconds: clipsTimeInfo[i].duration
+                )
+              )
+            )
+          ),
+          await SourceFileStream.importAsync(
+            InputFile(project.audioTracks[0].getFilePath())
+          )
+        ]),
+      ),
+      replace: true
+    );
+
+    await ffmpegController.executeWithArguments(await stream.build());
   }
 
   _getFinalOutputPath() {
@@ -83,24 +108,6 @@ class ProjectExporter extends FfmpegProjectRunner {
       _finalOutputPath = '$tmpDir/${currentTimestamp}.mp4';
     }
     return _finalOutputPath;
-  }
-  
-  List<String> _getAudioTrackInputArgs() {
-    return ['-i', project.audioTracks[0].getFilePath()];
-  }
-
-  _makeConcatInputFile() async {
-    final String listPath = '$tmpDir/encodedClips.txt';
-    String concatDemuxerList = '';
-    forEachClip((i, clip, timeInfo){
-      concatDemuxerList += 
-        """file '${_getClipTmpPath(i)}'
-        duration ${clipsTimeInfo[i].duration.toString()}
-        outpoint ${clipsTimeInfo[i].duration.toString()}\n""";
-    });
-
-    await File(listPath).writeAsString(concatDemuxerList);
-    return listPath;
   }
 
   saveToGallery(String tmpPath) async {

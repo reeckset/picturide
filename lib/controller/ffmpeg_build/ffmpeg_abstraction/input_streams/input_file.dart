@@ -1,7 +1,6 @@
 class InputFile {
   String file;
-  double durationSeconds;
-  int startTimeSeconds;
+  double durationSeconds, startTimeSeconds;
   bool loop;
 
   InputFile(

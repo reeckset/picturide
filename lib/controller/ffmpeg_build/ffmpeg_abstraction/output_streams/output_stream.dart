@@ -2,10 +2,10 @@ import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart
 
 abstract class OutputStream extends FFMPEGStream {
 
-  OutputStream(sourceStream):super(sourceStream: sourceStream);
+  OutputStream(FFMPEGStream sourceStream):super(sourceStream: sourceStream);
 
   @override
-  buildOutputArgs() {
+  buildOutputArgs() async {
     if(sourceStream == null) {
       throw Exception(
         'Output Stream has no source stream'
@@ -13,7 +13,7 @@ abstract class OutputStream extends FFMPEGStream {
     }
     return [
       ...prependArgs(),
-      ...sourceStream.buildOutputArgs(),
+      ...await sourceStream.buildOutputArgs(),
       ...appendArgs()
     ];
   }

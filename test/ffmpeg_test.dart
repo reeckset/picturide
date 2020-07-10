@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
 import 'package:picturide/controller/ffmpeg_build/project_previewer.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
@@ -48,6 +49,9 @@ void main() {
       ],
       outputResolution: {'w': 1920, 'h': 1080},
     );
+
+    FFMPEGStream.flutterFFprobe = FlutterFFprobeMock();
+    FFMPEGStream.forceTmpDirectory = 'test/tmp';
   });
 
   tearDownAll((){

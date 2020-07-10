@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/fit_to_resolution_filter_stream.dart';
@@ -10,27 +7,16 @@ import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_strea
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/source_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/add_output_properties_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/output_to_file_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
 
-class FlutterFFprobeMock extends FlutterFFprobe {
-  @override
-  getMediaInformation(String file) async {
-    final process = await Process.run('ffprobe',
-      ['-v','quiet',
-      '-print_format','json',
-      '-show_format','-show_streams',
-      '-print_format','json',file], runInShell: true);
-    final Map<String, dynamic> ffprobeResult = json.decode(process.stdout);
-    ffprobeResult['streams'].forEach(
-      (stream) => stream['type'] = stream['codec_type']
-    );
-    return ffprobeResult;
-  }
-}
+import 'utilities/ffmpeg/ffmpeg_mock.dart';
 
 void main() { 
 
   setUpAll((){
     Directory('test/tmp').create();
+    FFMPEGStream.flutterFFprobe = FlutterFFprobeMock();
+    FFMPEGStream.forceTmpDirectory = 'test/tmp';
   });
 
   tearDownAll((){
@@ -47,18 +33,17 @@ void main() {
   test('Fit to resolution',
     () async {
 
-      final List<String> args = OutputToFileStream('outputdeteste.mp4',
+      final List<String> args = await OutputToFileStream('outputdeteste.mp4',
         FitToResolutionFilterStream(
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.mp4'),
-            probeClient: FlutterFFprobeMock()
           ),
           1920,
           1080,
         )
       ).build();
 
-      final expectedOutput = ['-i', 'test/assets/video1.mp4', '-filter_complex', '[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,setsar=1,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS-STARTPTS[0:v-fit1920x1080]', '-map', '[0:v-fit1920x1080]', '-map', '[0:a]', 'outputdeteste.mp4'];
+      final expectedOutput = ['-i', 'test/assets/video1.mp4', '-filter_complex', '[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,setsar=1,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS-STARTPTS[0:v-fit1920x1080]', '-map', '[0:v-fit1920x1080]', '-map', '0:a', 'outputdeteste.mp4'];
 
       compareFinalArguments(args, expectedOutput);
     });
@@ -66,15 +51,13 @@ void main() {
   test('Concatenate',
     () async {
 
-      final List<String> args = OutputToFileStream('outputdeteste.mp4',
+      final List<String> args = await OutputToFileStream('outputdeteste.mp4',
         ConcatenateFilterStream([
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.mp4'),
-            probeClient: FlutterFFprobeMock()
           ),
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.mp4'),
-            probeClient: FlutterFFprobeMock()
           ),
         ])
       ).build();
@@ -87,23 +70,19 @@ void main() {
   test('Concatenate inception',
     () async {
 
-      final List<String> args = OutputToFileStream('test/tmp/outputdeteste.mp4',
+      final List<String> args = await OutputToFileStream('test/tmp/outputdeteste.mp4',
         ConcatenateFilterStream([
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.mp4'),
-            probeClient: FlutterFFprobeMock()
           ),
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.1.mp4'),
-            probeClient: FlutterFFprobeMock()
           ),
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.2.mp4'),
-            probeClient: FlutterFFprobeMock()
           ),
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.3.mp4'),
-            probeClient: FlutterFFprobeMock()
           ),
         ])
       ).build();
@@ -116,20 +95,18 @@ void main() {
     test('Concatenate with concat demuxer',
     () async {
 
-      final List<String> args = OutputToFileStream('test/tmp/outputdeteste.mp4',
+      final List<String> args = await OutputToFileStream('test/tmp/outputdeteste.mp4',
         await ConcatInputStream.importAsync([
           InputFile('test/assets/video1.mp4',durationSeconds: 3),
           InputFile('test/assets/video1.1.mp4', durationSeconds: 4),
           InputFile('test/assets/video1.2.mp4',),
           InputFile('test/assets/video1.3.mp4',),
-        ],
-        tmpDir: 'test/tmp',
-        probeClient: FlutterFFprobeMock())
+        ])
       ).build();
 
       final String demuxerListContent = File('test/tmp/0-concat-list.txt').readAsStringSync();
 
-      final expectedOutput = ['-i', 'test/tmp/0-concat-list.txt', 'test/tmp/outputdeteste.mp4'];
+      final expectedOutput = ['-f', 'concat', '-safe', '0', '-i', 'test/tmp/0-concat-list.txt', 'test/tmp/outputdeteste.mp4'];
 
       final expectedListContent = "file 'test/assets/video1.mp4'\nduration 3.0\noutpoint 3.0\nfile 'test/assets/video1.1.mp4'\nduration 4.0\noutpoint 4.0\nfile 'test/assets/video1.2.mp4'\nfile 'test/assets/video1.3.mp4'";
 
@@ -140,7 +117,7 @@ void main() {
     test('Output Properties',
       () async {
 
-        final List<String> args = OutputToFileStream('outputdeteste.mp4',
+        final List<String> args = await OutputToFileStream('outputdeteste.mp4',
           AddOutputPropertiesStream([
             '-r', '24',
             '-s', '1280x720',
@@ -150,14 +127,13 @@ void main() {
           ], FitToResolutionFilterStream(
             await SourceFileStream.importAsync(
               InputFile('test/assets/video1.mp4'),
-              probeClient: FlutterFFprobeMock()
             ),
             1920,
             1080,
           )
         ),replace:true).build();
 
-        final expectedOutput = ['-i', 'test/assets/video1.mp4', '-filter_complex', '[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,setsar=1,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS-STARTPTS[0:v-fit1920x1080]', '-map', '[0:v-fit1920x1080]', '-map', '[0:a]', '-r', '24', '-s', '1280x720', '-f', 'avi', '-c:a', 'aac', '-aac_coder', 'fast', '-preset', 'ultrafast', '-async', '1', '-vsync', '1', '-y', 'outputdeteste.mp4'];
+        final expectedOutput = ['-i', 'test/assets/video1.mp4', '-filter_complex', '[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,setsar=1,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS-STARTPTS[0:v-fit1920x1080]', '-map', '[0:v-fit1920x1080]', '-map', '0:a', '-r', '24', '-s', '1280x720', '-f', 'avi', '-c:a', 'aac', '-aac_coder', 'fast', '-preset', 'ultrafast', '-async', '1', '-vsync', '1', '-y', 'outputdeteste.mp4'];
 
         compareFinalArguments(args, expectedOutput);
       }

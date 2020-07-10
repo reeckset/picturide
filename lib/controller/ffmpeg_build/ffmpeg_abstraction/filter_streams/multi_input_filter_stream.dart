@@ -1,4 +1,6 @@
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/labels/ffmpeg_filtered_label.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/labels/ffmpeg_label.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
 
 abstract class MultiInputFilterStream extends FilterStream {
@@ -21,14 +23,25 @@ abstract class MultiInputFilterStream extends FilterStream {
   }
 
   @override
-  buildFilterComplex() {
+  buildInputArgs() async {
+    final List<String> result = [];
+    for(final s in sourceStreams){
+      result.addAll(await s.buildInputArgs());
+    }
+    return result;
+  }
+
+  @override
+  buildFilterComplex() async {
     if(sourceStreams == null) {
       throw Exception(
         'Multi input filter has no source streams'
       );
     }
     final childrenFilterComplexes =
-      sourceStreams.map((s) => s.buildFilterComplex());
+      await Future.wait(sourceStreams.map(
+        (s) async => await s.buildFilterComplex())
+      );
     final currentFilterComplex = 
       childrenFilterComplexes.where((fc) => fc.isNotEmpty).join(';');
 
@@ -39,27 +52,30 @@ abstract class MultiInputFilterStream extends FilterStream {
   }
 
   @override
-  List<String> buildOutputArgs() => 
-    sourceStreams.fold([],
-      (acc, s) {
-        acc.addAll(s.buildOutputArgs());
-        return acc;
-      }); 
-
-  String getDefaultAudioStreamLabel() {
-    String label = '';
-    for(final sourceStream in sourceStreams) {
-      label += sourceStream.getAudioStreamLabel() + '-';
+  buildOutputArgs() async {
+    final List<String> result = [];
+    for(final s in sourceStreams){
+      result.addAll(await s.buildOutputArgs());
     }
-    return label;
+    return result;
   }
 
-  String getDefaultVideoStreamLabel() {
+  @override
+  FFMPEGLabel generateAudioStreamLabel(String appendText) {
     String label = '';
     for(final sourceStream in sourceStreams) {
-      label += sourceStream.getVideoStreamLabel() + '-';
+      label += sourceStream.getAudioStreamLabel().label + '-';
     }
-    return label;
+    return FFMPEGFilteredLabel(label + appendText);
+  }
+
+  @override
+  FFMPEGLabel generateVideoStreamLabel(String appendText) {
+    String label = '';
+    for(final sourceStream in sourceStreams) {
+      label += sourceStream.getVideoStreamLabel().label + '-';
+    }
+    return FFMPEGFilteredLabel(label + appendText);
   }
 
   @override

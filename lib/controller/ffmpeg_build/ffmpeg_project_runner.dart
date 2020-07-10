@@ -1,7 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
-import 'package:picturide/model/audio_track.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/audio_volume_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/fit_to_resolution_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/source_file_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/model/clip_time_info.dart';
 import 'package:picturide/model/project.dart';
@@ -38,47 +42,38 @@ abstract class FfmpegProjectRunner {
 
   getNumberOfClips() => endClip - startClip + 1;
 
-  forEachClip(callBack) {
+  mapActiveClips<T>(callBack) {
+    final List<T> result = [];
     for(int i = startClip; i <= endClip; i++) {
-      callBack(i-startClip, this.project.clips[i], clipsTimeInfo[i]);
+      result.add(
+        callBack(i-startClip, this.project.clips[i], clipsTimeInfo[i])
+      );
     }
+    return result;
   }
 
-  forEachClipAsync(callBack) async {
+  mapActiveClipsAsync<T>(callBack) async {
+    final List<T> result = [];
     for(int i = startClip; i <= endClip; i++) {
-      await callBack(i-startClip, this.project.clips[i], clipsTimeInfo[i]);
+      result.add(
+        await callBack(i-startClip, this.project.clips[i], clipsTimeInfo[i])
+      );
     }
+    return result;
   }
 
-  List<String> getClipInputArgs(
-    Clip clip, ClipTimeInfo clipTimeInfo
-  ) => [
-      '-ss', clip.startTimestamp.toString(),
-      '-t', clipTimeInfo.duration.abs().toString(),
-      '-stream_loop', '-1',
-      '-i', clip.getFilePath(),
-  ];
-
-  List<String> buildAudioInputArgsForClip(
-    ClipTimeInfo clipTimeInfo, Project project
-  ){
-    final AudioTrack audio = project.audioTracks[clipTimeInfo.songIndex];
-    final double audioStartTime =
-      clipTimeInfo.beatNumber * audio.getBeatSeconds();
-
-    return [
-      '-ss', audioStartTime.toString(),
-      '-i', audio.getFilePath()
-    ];
-  }
-
-  String getClipFilter(int i, Clip clip){
-    return """[$i:v]
-      scale=${outputResolution['w']}:${outputResolution['h']}
-      :force_original_aspect_ratio=decrease,setsar=1,
-      pad=${outputResolution['w']}:${outputResolution['h']}:(ow-iw)/2:(oh-ih)/2
-      ,setpts=PTS-STARTPTS
-      [v$i];[$i:a]volume=${clip.volume}[a$i]""";
-  }
-
+  Future<FFMPEGStream> getClipStream(Clip clip, ClipTimeInfo clipTimeInfo)
+  async =>
+    AudioVolumeFilterStream(clip.volume,
+      FitToResolutionFilterStream(
+        await SourceFileStream.importAsync(
+          InputFile(
+            clip.getFilePath(),
+            durationSeconds: clipTimeInfo.duration.abs(),
+            loop: true,
+            startTimeSeconds: clip.startTimestamp,
+          )
+        ), outputResolution['w'], outputResolution['h']
+      )
+    );
 }
