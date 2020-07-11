@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
 import 'package:picturide/controller/ffmpeg_build/project_previewer.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
@@ -10,7 +11,7 @@ import 'package:picturide/controller/ffmpeg_build/project_exporter.dart';
 import 'utilities/ffmpeg/ffmpeg_mock.dart';
 import 'utilities/ffmpeg/video_file_tester.dart';
 
-final String tmpDir = 'test/tmp';
+final String tmpDir = 'test/tmp_ffmpeg_test';
 final String outputPath = '$tmpDir/output.mp4';
 
 class TestableProjectExporter extends ProjectExporter with Mock {
@@ -33,7 +34,7 @@ void main() {
   Project defaultProject = Project.create('-');
 
   setUpAll((){
-    Directory('test/tmp').create();
+    Directory(tmpDir).create();
 
     defaultProject = Project(
       filepath: '-',
@@ -48,10 +49,13 @@ void main() {
       ],
       outputResolution: {'w': 1920, 'h': 1080},
     );
+
+    FFMPEGStream.flutterFFprobe = FlutterFFprobeMock();
+    FFMPEGStream.forceTmpDirectory = tmpDir;
   });
 
   tearDownAll((){
-    Directory('test/tmp').delete(recursive: true);
+    Directory(tmpDir).delete(recursive: true);
   });
 
   test('Project export',
