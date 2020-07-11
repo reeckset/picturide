@@ -1,9 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_stream.dart';
-import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
 
 // Use this only with clips of the same stream codecs and resolution
 class ConcatInputStream extends InputStream {

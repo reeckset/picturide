@@ -22,7 +22,7 @@ class FlutterFFprobeMock extends FlutterFFprobe {
       ['-v','quiet',
       '-print_format','json',
       '-show_format','-show_streams',
-      '-print_format','json',file], runInShell: true);
+      '-print_format','json', file], runInShell: true);
     final Map<String, dynamic> ffprobeResult = json.decode(process.stdout);
     ffprobeResult['streams'].forEach(
       (stream) => stream['type'] = stream['codec_type']

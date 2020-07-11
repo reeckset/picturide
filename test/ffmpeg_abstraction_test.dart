@@ -11,16 +11,18 @@ import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart
 
 import 'utilities/ffmpeg/ffmpeg_mock.dart';
 
+final String tmpDir = 'test/tmp_ffmpeg_abstraction';
+
 void main() { 
 
   setUpAll((){
-    Directory('test/tmp').create();
+    Directory(tmpDir).create();
     FFMPEGStream.flutterFFprobe = FlutterFFprobeMock();
-    FFMPEGStream.forceTmpDirectory = 'test/tmp';
+    FFMPEGStream.forceTmpDirectory = tmpDir;
   });
 
   tearDownAll((){
-    Directory('test/tmp').delete(recursive: true);
+    Directory(tmpDir).delete(recursive: true);
   });
 
   final compareFinalArguments = (actual, expected) {
@@ -70,7 +72,7 @@ void main() {
   test('Concatenate inception',
     () async {
 
-      final List<String> args = await OutputToFileStream('test/tmp/outputdeteste.mp4',
+      final List<String> args = await OutputToFileStream('$tmpDir/outputdeteste.mp4',
         ConcatenateFilterStream([
           await SourceFileStream.importAsync(
             InputFile('test/assets/video1.mp4'),
@@ -87,7 +89,7 @@ void main() {
         ])
       ).build();
 
-      final expectedOutput = ['-i', 'test/assets/video1.mp4', '-i', 'test/assets/video1.1.mp4', '-i', 'test/assets/video1.2.mp4', '-i', 'test/assets/video1.3.mp4', '-filter_complex', '[0:v][0:a][1:v][1:a][2:v][2:a][3:v][3:a]concat=n=4:v=1:a=1[0:v-1:v-2:v-3:v-concatenate][0:a-1:a-2:a-3:a-concatenate]', '-map', '[0:v-1:v-2:v-3:v-concatenate]', '-map', '[0:a-1:a-2:a-3:a-concatenate]', 'test/tmp/outputdeteste.mp4'];
+      final expectedOutput = ['-i', 'test/assets/video1.mp4', '-i', 'test/assets/video1.1.mp4', '-i', 'test/assets/video1.2.mp4', '-i', 'test/assets/video1.3.mp4', '-filter_complex', '[0:v][0:a][1:v][1:a][2:v][2:a][3:v][3:a]concat=n=4:v=1:a=1[0:v-1:v-2:v-3:v-concatenate][0:a-1:a-2:a-3:a-concatenate]', '-map', '[0:v-1:v-2:v-3:v-concatenate]', '-map', '[0:a-1:a-2:a-3:a-concatenate]', '$tmpDir/outputdeteste.mp4'];
 
       compareFinalArguments(args, expectedOutput);
     });
@@ -95,7 +97,7 @@ void main() {
     test('Concatenate with concat demuxer',
     () async {
 
-      final List<String> args = await OutputToFileStream('test/tmp/outputdeteste.mp4',
+      final List<String> args = await OutputToFileStream('$tmpDir/outputdeteste.mp4',
         await ConcatInputStream.importAsync([
           InputFile('test/assets/video1.mp4',durationSeconds: 3),
           InputFile('test/assets/video1.1.mp4', durationSeconds: 4),
@@ -104,9 +106,9 @@ void main() {
         ])
       ).build();
 
-      final String demuxerListContent = File('test/tmp/0-concat-list.txt').readAsStringSync();
+      final String demuxerListContent = File('$tmpDir/0-concat-list.txt').readAsStringSync();
 
-      final expectedOutput = ['-f', 'concat', '-safe', '0', '-i', 'test/tmp/0-concat-list.txt', 'test/tmp/outputdeteste.mp4'];
+      final expectedOutput = ['-f', 'concat', '-safe', '0', '-i', '$tmpDir/0-concat-list.txt', '$tmpDir/outputdeteste.mp4'];
 
       final expectedListContent = "file 'test/assets/video1.mp4'\nduration 3.0\noutpoint 3.0\nfile 'test/assets/video1.1.mp4'\nduration 4.0\noutpoint 4.0\nfile 'test/assets/video1.2.mp4'\nfile 'test/assets/video1.3.mp4'";
 
