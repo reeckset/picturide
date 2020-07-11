@@ -43,12 +43,10 @@ abstract class MultiInputFilterStream extends FilterStream {
         (s) async => await s.buildFilterComplex())
       );
     final currentFilterComplex = 
-      childrenFilterComplexes.where((fc) => fc.isNotEmpty).join(';');
+      [...childrenFilterComplexes, buildFilter()]
+      .where((fc) => fc.isNotEmpty).join(';');
 
-    return (currentFilterComplex.isNotEmpty
-        ? '$currentFilterComplex;'
-        : '')
-      + buildFilter();
+    return currentFilterComplex;
   }
 
   @override

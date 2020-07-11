@@ -3,7 +3,9 @@ import 'dart:math';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/audio_volume_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/fit_to_resolution_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/set_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/null_audio_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/source_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
 import 'package:picturide/model/clip.dart';
@@ -63,17 +65,26 @@ abstract class FfmpegProjectRunner {
   }
 
   Future<FFMPEGStream> getClipStream(Clip clip, ClipTimeInfo clipTimeInfo)
-  async =>
-    AudioVolumeFilterStream(clip.volume,
-      FitToResolutionFilterStream(
+  async {
+
+    FFMPEGStream stream = FitToResolutionFilterStream(
         await SourceFileStream.importAsync(
           InputFile(
             clip.getFilePath(),
-            durationSeconds: clipTimeInfo.duration.abs(),
+            durationSeconds: clipTimeInfo.duration,
             loop: true,
             startTimeSeconds: clip.startTimestamp,
           )
         ), outputResolution['w'], outputResolution['h']
-      )
-    );
+      );
+
+    if(!stream.hasAudioStream()){
+      stream = SetAudioFilterStream(
+        stream,
+        NullAudioStream(clipTimeInfo.duration)
+      );
+    }
+
+    return AudioVolumeFilterStream(clip.volume, stream);
+  }
 }
