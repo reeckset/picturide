@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/fit_to_resolution_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/set_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/concat_input_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/null_audio_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/source_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/add_output_properties_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/output_to_file_stream.dart';
@@ -31,6 +33,20 @@ void main() {
       expect(actual[i], expected[i]);
     }
   };
+
+  test('Source File and Output to File',
+    () async {
+
+      final List<String> args = await OutputToFileStream('outputdeteste.mp4',
+        await SourceFileStream.importAsync(
+          InputFile('test/assets/video1.mp4'),
+        ),
+      ).build();
+      
+      final expectedOutput = ['-i', 'test/assets/video1.mp4', 'outputdeteste.mp4'];
+
+      compareFinalArguments(args, expectedOutput);
+    });
 
   test('Fit to resolution',
     () async {
@@ -142,6 +158,25 @@ void main() {
     );
     
 
+    test('Null Audio and Set Audio Filter',
+      () async {
+        final List<String> args =
+          await OutputToFileStream(
+            'outputdeteste.mp4',
+            SetAudioFilterStream(
+              await SourceFileStream.importAsync(
+                InputFile('test/assets/video1.mp4'),
+              ),
+              NullAudioStream(1),
+            ),
+          replace:true
+        ).build();
+       
+        final expectedOutput = ['-i', 'test/assets/video1.mp4', '-f', 'lavfi', '-t', '1.0', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100', '-map', '0:v', '-map', '1:a', '-y', 'outputdeteste.mp4'];
+
+        compareFinalArguments(args, expectedOutput);
+      }
+    );
     
 
 }
