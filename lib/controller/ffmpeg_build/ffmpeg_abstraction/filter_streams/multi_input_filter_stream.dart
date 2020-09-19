@@ -60,6 +60,7 @@ abstract class MultiInputFilterStream extends FilterStream {
 
   @override
   FFMPEGLabel generateAudioStreamLabel(String appendText) {
+    if(!sourceStreams.every((stream) => stream.hasAudioStream())) return null;
     String label = '';
     for(final sourceStream in sourceStreams) {
       label += sourceStream.getAudioStreamLabel().label + '-';
@@ -69,6 +70,7 @@ abstract class MultiInputFilterStream extends FilterStream {
 
   @override
   FFMPEGLabel generateVideoStreamLabel(String appendText) {
+    if(!sourceStreams.every((stream) => stream.hasVideoStream())) return null;
     String label = '';
     for(final sourceStream in sourceStreams) {
       label += sourceStream.getVideoStreamLabel().label + '-';
@@ -78,14 +80,14 @@ abstract class MultiInputFilterStream extends FilterStream {
 
   @override
   ensureVideoStream(){
-    if(!sourceStreams.every((stream) => stream.hasVideoStream())){
+    if(!this.hasVideoStream()){
       throw Exception('Trying to apply video filter to a stream with no video');
     }
   }
 
   @override
   ensureAudioStream(){
-    if(!sourceStreams.every((stream) => stream.hasAudioStream())){
+    if(!this.hasAudioStream()){
       throw Exception('Trying to apply audio filter to a stream with no audio');
     }
   }

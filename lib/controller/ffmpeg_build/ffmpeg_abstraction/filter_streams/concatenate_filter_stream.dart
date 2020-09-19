@@ -9,17 +9,20 @@ class ConcatenateFilterStream extends MultiInputFilterStream {
 
   @override
   buildFilter() {
-    ensureVideoStream();
-    ensureAudioStream();
     String filter = '';
+    final bool hasAudioStream = this.hasAudioStream();
+    final bool hasVideoStream = this.hasVideoStream();
+
     // createFilterInputs
     for(final sourceStream in sourceStreams) {
-      filter += '''${sourceStream.getVideoStreamLabel().forFilterInput()}
-        ${sourceStream.getAudioStreamLabel().forFilterInput()}''';
+      filter += 
+      '''${hasVideoStream ? sourceStream.getVideoStreamLabel().forFilterInput() : ''}
+      ${hasAudioStream ? sourceStream.getAudioStreamLabel().forFilterInput() : ''}''';
     }
     //apply filter
-    filter += '''concat=n=${sourceStreams.length}:v=1:a=1
-      ${getVideoStreamLabel().forFilterInput()}${getAudioStreamLabel().forFilterInput()}''';
+    filter += '''concat=n=${sourceStreams.length}:v=${hasVideoStream ? 1 : 0}:a=${hasAudioStream ? 1 : 0}
+      ${hasVideoStream ? getVideoStreamLabel().forFilterInput() : ''}
+      ${hasAudioStream ? getAudioStreamLabel().forFilterInput() : ''}''';
     return filter;
   }
  

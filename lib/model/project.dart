@@ -61,7 +61,7 @@ class Project {
 
       if(isLastOfAudioTrack){
         calculatedDuration = currentAudioTrack.sourceDuration
-          - (audioTrackDurationCounter + calculatedDuration);
+          - audioTrackDurationCounter;
         audioTrackDurationCounter = 0;
       } else {
         audioTrackDurationCounter += calculatedDuration;

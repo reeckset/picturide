@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/format_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/mix_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/concat_input_stream.dart';
@@ -90,9 +91,7 @@ class ProjectExporter extends FfmpegProjectRunner {
               )
             )
           ),
-          await SourceFileStream.importAsync(
-            InputFile(project.audioTracks[0].getFilePath())
-          )
+          ConcatenateFilterStream(await getAudioTrackStreams())
         ]),
       ),
       replace: true
