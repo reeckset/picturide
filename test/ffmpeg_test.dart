@@ -45,6 +45,7 @@ void main() {
         sourceDuration: 30.0,
       )),
       audioTracks: [
+        AudioTrack(filePath: 'test/assets/audio1.mp3', bpm: 140, sourceDuration: 5.0),
         AudioTrack(filePath: 'test/assets/audio1.mp3', bpm: 140, sourceDuration: 1000.0)
       ],
       outputResolution: {'w': 1920, 'h': 1080},
@@ -69,7 +70,7 @@ void main() {
 
       (await VideoFileTester(projectExporter.testableOutputPath()).init())
         ..checkDuration(defaultProject.getDuration())
-        ..checkDuration(13.33)
+        ..checkDuration(11.9)
         ..checkAVDurationMatch()
         ..checkFrameRate(30)
         ..checkResolution(defaultProject.outputResolution);
@@ -86,7 +87,7 @@ void main() {
 
     (await VideoFileTester(outputPath).init())
       ..checkDuration(defaultProject.getDuration())
-      ..checkDuration(13.33)
+      ..checkDuration(11.9)
       ..checkAVDurationMatch()
       ..checkFrameRate(24)
       ..checkResolution(projectPreviewer.getOutputResolution());
