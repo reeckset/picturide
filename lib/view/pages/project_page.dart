@@ -56,7 +56,8 @@ class ProjectPageState extends State<ProjectPage> {
   _getPageContent(context, Project project){
     final MediaQueryData mediaQuery = MediaQuery.of(context);
     return Scaffold(
-      body: Container(
+      body: SafeArea(
+        child: Container(
           padding: EdgeInsets.only(top: 10.0),
           child:
             project == null
@@ -73,7 +74,8 @@ class ProjectPageState extends State<ProjectPage> {
                 EditingTimelines(),
               ]),
         ),
-      );
+      )
+    );
   }
 
   
