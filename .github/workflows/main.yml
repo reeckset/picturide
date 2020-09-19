@@ -1,0 +1,10 @@
+on: [push, pull_request]
+
+jobs:
+  lint-and-tests:
+    runs-on: ubuntu-latest
+    name: Linter and tests
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker pull reeckset/picturide
+      - run: docker run reeckset/picturide
