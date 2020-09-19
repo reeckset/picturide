@@ -85,6 +85,25 @@ void main() {
       compareFinalArguments(args, expectedOutput);
     });
 
+  test('Concatenate audio',
+  () async {
+
+    final List<String> args = await OutputToFileStream('outputdeteste.mp3',
+      ConcatenateFilterStream([
+        await SourceFileStream.importAsync(
+          InputFile('test/assets/audio1.mp3'),
+        ),
+        await SourceFileStream.importAsync(
+          InputFile('test/assets/audio1.mp3'),
+        ),
+      ])
+    ).build();
+
+    final expectedOutput = ['-i', 'test/assets/audio1.mp3', '-i', 'test/assets/audio1.mp3', '-filter_complex', '[0:a][1:a]concat=n=2:v=0:a=1[0:a-1:a-concatenate]', '-map', '[0:a-1:a-concatenate]', 'outputdeteste.mp3'];
+
+    compareFinalArguments(args, expectedOutput);
+  });
+
   test('Concatenate inception',
     () async {
 

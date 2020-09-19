@@ -25,15 +25,8 @@ class ProjectPreviewer extends FfmpegProjectRunner {
   run() async {    
     final FFMPEGStream filters = 
       MixAudioFilterStream([
-        ConcatenateFilterStream(
-          await _getClipStreams()
-        ),
-        await SourceFileStream.importAsync(
-          InputFile(
-            project.audioTracks[0].getFilePath(),
-            startTimeSeconds: clipsTimeInfo[startClip].startTime,
-          )
-        )
+        ConcatenateFilterStream(await _getClipStreams()),
+        ConcatenateFilterStream(await getAudioTrackStreams())
       ]);
 
     final FFMPEGStream output = OutputToFileStream(
@@ -46,7 +39,8 @@ class ProjectPreviewer extends FfmpegProjectRunner {
 
     final args = await output.build();
 
-    // for debugging: args.forEach((a) => a.split('\n').forEach((b)=>print(b)));
+    // for debugging: 
+    args.forEach((a) => a.split('\n').forEach((b)=>print(b)));
     return ffmpegController.executeWithArguments(args);
   }
 

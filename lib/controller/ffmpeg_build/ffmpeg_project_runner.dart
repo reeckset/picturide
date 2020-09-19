@@ -87,4 +87,25 @@ abstract class FfmpegProjectRunner {
 
     return AudioVolumeFilterStream(clip.volume, stream);
   }
+
+  Future<List<FFMPEGStream>> getAudioTrackStreams() async {
+    final firstAudioIndex = clipsTimeInfo[startClip].songIndex;
+
+    final List<FFMPEGStream> result = [];
+
+    for(int i = firstAudioIndex; i < this.project.audioTracks.length; i++) {
+      final double startTimeSeconds = (i == firstAudioIndex
+            ? clipsTimeInfo[startClip].startTime : 0);
+      result.add(await SourceFileStream.importAsync(
+        InputFile(
+          project.audioTracks[i].getFilePath(),
+          startTimeSeconds: startTimeSeconds,
+          durationSeconds:
+            project.audioTracks[i].sourceDuration - startTimeSeconds
+        )
+      ));
+    } 
+
+    return result;   
+  }
 }
