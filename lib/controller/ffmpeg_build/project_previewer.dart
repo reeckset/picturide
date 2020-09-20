@@ -25,8 +25,8 @@ class ProjectPreviewer extends FfmpegProjectRunner {
   run() async {    
     final FFMPEGStream filters = 
       MixAudioFilterStream([
-        ConcatenateFilterStream(await _getClipStreams()),
-        ConcatenateFilterStream(await getAudioTrackStreams())
+        await _getClipsStream(),
+        await getAudioTracksStream()
       ]);
 
     final FFMPEGStream output = OutputToFileStream(
@@ -39,15 +39,18 @@ class ProjectPreviewer extends FfmpegProjectRunner {
 
     final args = await output.build();
 
-    // for debugging: 
-    args.forEach((a) => a.split('\n').forEach((b)=>print(b)));
+    // for debugging: args.forEach((a) => a.split('\n').forEach((b)=>print(b)));
     return ffmpegController.executeWithArguments(args);
   }
 
-  _getClipStreams() async =>
-    mapActiveClipsAsync<FFMPEGStream>(
+  _getClipsStream() async {
+    final result = await mapActiveClipsAsync<FFMPEGStream>(
       (i, clip, timeInfo) => getClipStream(clip, timeInfo)
     );
+
+    if(result.length == 1) return result[0];
+    return ConcatenateFilterStream(result);
+  }
 
   List<String> _getOutputArgs() => [
     '-r', previewFrameRate.toString(),

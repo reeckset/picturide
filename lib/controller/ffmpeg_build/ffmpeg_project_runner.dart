@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/audio_volume_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/fit_to_resolution_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/set_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
@@ -88,7 +89,7 @@ abstract class FfmpegProjectRunner {
     return AudioVolumeFilterStream(clip.volume, stream);
   }
 
-  Future<List<FFMPEGStream>> getAudioTrackStreams() async {
+  Future<FFMPEGStream> getAudioTracksStream() async {
     final firstAudioIndex = clipsTimeInfo[startClip].songIndex;
 
     final List<FFMPEGStream> result = [];
@@ -104,8 +105,12 @@ abstract class FfmpegProjectRunner {
             project.audioTracks[i].sourceDuration - startTimeSeconds
         )
       ));
-    } 
+    }
 
-    return result;   
+    if(result.length == 1){
+      return result[0];
+    }
+
+    return ConcatenateFilterStream(result);   
   }
 }

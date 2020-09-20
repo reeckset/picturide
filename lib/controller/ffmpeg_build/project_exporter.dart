@@ -93,7 +93,7 @@ class ProjectExporter extends FfmpegProjectRunner {
               )
             )
           ),
-          ConcatenateFilterStream(await getAudioTrackStreams())
+          await getAudioTracksStream()
         ]),
       ),
       replace: true
