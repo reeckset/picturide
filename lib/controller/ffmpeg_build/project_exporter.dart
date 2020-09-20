@@ -8,7 +8,6 @@ import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_stre
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/mix_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/concat_input_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
-import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/source_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/add_output_properties_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/output_to_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_project_runner.dart';
@@ -20,7 +19,6 @@ class ProjectExporter extends FfmpegProjectRunner {
   final FlutterFFmpegConfig _flutterFFmpegConfig;
   String tmpDir;
   String _finalOutputPath;
-  final int frameRate = 30;
   Function progressListener;
   
   String phase = 'Waiting to export...';
@@ -32,7 +30,11 @@ class ProjectExporter extends FfmpegProjectRunner {
     super(project, ffmpegController);
 
   @override
-  Map<String, int> getOutputResolution() => project.outputResolution;
+  Map<String, int> getOutputResolution() =>
+    project.outputPreferences.resolution;
+
+  int _getFrameRate() =>
+    project.outputPreferences.framerate;
 
   getTmpDirectory() async => (await getTemporaryDirectory()).path;
 
@@ -51,7 +53,7 @@ class ProjectExporter extends FfmpegProjectRunner {
   }
 
   List<String> _getOutputArgs() => [
-    '-r', frameRate.toString(), '-f', 'mp4'
+    '-r', _getFrameRate().toString(), '-f', 'mp4'
   ];
 
   String _getClipTmpPath(i) => '$tmpDir/clip$i.mp4';
@@ -138,7 +140,7 @@ class ProjectExporter extends FfmpegProjectRunner {
 
   _setPhaseExportClip(int i, ClipTimeInfo timeInfo){
     this.phase = 'Encoding clip ${i+1} of ${getNumberOfClips()}';
-    this.framesInPhase = (timeInfo.duration * this.frameRate).toInt();
+    this.framesInPhase = (timeInfo.duration * _getFrameRate()).toInt();
   }
 
   _setPhaseCompileClips() {
@@ -151,6 +153,6 @@ class ProjectExporter extends FfmpegProjectRunner {
     this.framesInPhase = 1;
   }
 
-  _getTotalNumberOfFrames() => (project.getDuration()*this.frameRate).toInt();
+  _getTotalNumberOfFrames() => (project.getDuration()*_getFrameRate()).toInt();
 
 }

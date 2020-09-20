@@ -5,6 +5,7 @@ import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:picturide/model/clip_time_info.dart';
+import 'package:picturide/model/output_preferences.dart';
 
 part 'project.g.dart';
 
@@ -12,25 +13,34 @@ part 'project.g.dart';
 class Project {
   List<Clip> clips;
   List<AudioTrack> audioTracks;
-  Map<String, int> outputResolution;
+  OutputPreferences outputPreferences;
   String filepath;
   @JsonKey(ignore: true)
   Map<int, ClipTimeInfo> clipsTimeInfo;
 
-  Project({this.filepath, this.clips, this.audioTracks, this.outputResolution}){
+  Project({
+    this.filepath,
+    this.clips,
+    this.audioTracks,
+    this.outputPreferences
+  }){
     generateClipsTimeInfo();
+    if(outputPreferences == null){
+      outputPreferences = OutputPreferences.create();
+    }
   }
+
   Project.create(filepath):this(
     filepath: filepath,
     clips: List<Clip>(),
     audioTracks: List<AudioTrack>(),
-    outputResolution: {'w':1280, 'h':720},
+    outputPreferences: OutputPreferences.create(),
   );
 
   Project.fromProject(Project p):this(
     clips: p.clips,
     audioTracks: p.audioTracks,
-    outputResolution: p.outputResolution,
+    outputPreferences: p.outputPreferences,
     filepath: p.filepath,
   );
 
@@ -87,7 +97,8 @@ class Project {
     this.clipsTimeInfo = result;
   }
 
-  getAspectRatio() => outputResolution['w'] / outputResolution['h'];
+  getAspectRatio() =>
+    outputPreferences.resolution['w'] / outputPreferences.resolution['h'];
 
   double getDuration() {
     final lastClipInfo = getClipsTimeInfo()[this.clips.length-1];

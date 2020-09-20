@@ -17,15 +17,16 @@ Project _$ProjectFromJson(Map<String, dynamic> json) {
         ?.map((e) =>
             e == null ? null : AudioTrack.fromJson(e as Map<String, dynamic>))
         ?.toList(),
-    outputResolution: (json['outputResolution'] as Map<String, dynamic>)?.map(
-      (k, e) => MapEntry(k, e as int),
-    ),
+    outputPreferences: json['outputPreferences'] == null
+        ? null
+        : OutputPreferences.fromJson(
+            json['outputPreferences'] as Map<String, dynamic>),
   );
 }
 
 Map<String, dynamic> _$ProjectToJson(Project instance) => <String, dynamic>{
       'clips': instance.clips,
       'audioTracks': instance.audioTracks,
-      'outputResolution': instance.outputResolution,
+      'outputPreferences': instance.outputPreferences,
       'filepath': instance.filepath,
     };

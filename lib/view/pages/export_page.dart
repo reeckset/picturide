@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:picturide/controller/ffmpeg_build/project_exporter.dart';
+import 'package:picturide/model/output_preferences.dart';
+import 'package:picturide/redux/actions/history_actions.dart';
+import 'package:picturide/redux/actions/project_actions/project_settings_actions.dart';
+import 'package:picturide/redux/state/history_state.dart';
 import 'package:picturide/view/widgets/modals/ask_confirm.dart';
 import 'package:picturide/redux/state/app_state.dart';
+import 'package:picturide/view/widgets/modals/ask_options.dart';
+import 'package:picturide/view/widgets/modals/output_preferences_dialog.dart';
 
 class ExportPage extends StatefulWidget {
   @override
@@ -22,12 +28,52 @@ class _ExportPageState extends State<ExportPage> {
   void initState() {
     super.initState();
     Future(() async {
+      try {
+        await _preExportOutputPreferencesCheck();
+        await _preExportSaveCheck();
+      } catch (e) {
+        Navigator.of(context).pop();
+        return;
+      }
+      
       ProjectExporter(_getProject(), _flutterFFmpeg,
         progressListener: _progressListener)
         .run()
         .then((_){ setState((){this.hasFinished = true;});})
         .catchError((_){});
     });
+  }
+
+  _preExportSaveCheck() async {
+    if(StoreProvider.of<AppState>(context).state.history.savingStatus
+        == SavingStatus.notSaved
+    ){
+      switch(await askOptions(
+        'Save the project before exporting?',
+        'Output preferences will only be saved if you save the project',
+        ['Cancel', 'No', 'Yes'], context
+      )){
+        case 0: 
+          throw Exception('User cancelled export on pre-export save');
+        case 2:
+          StoreProvider.of<AppState>(context).dispatch(
+            saveCurrentProjectActionCreator()
+          );
+      }
+    }
+  }
+
+  _preExportOutputPreferencesCheck() async {
+    final OutputPreferences outputPreferences =
+      await outputPreferencesDialog(_getProject(), context);
+    if(outputPreferences == null){
+      throw Exception('User cancelled export on output preferences selector');
+    }
+    if(outputPreferences != _getProject().outputPreferences){
+      StoreProvider.of<AppState>(context).dispatch(
+        SetOutputPreferencesAction(outputPreferences)
+      );
+    }
   }
 
   _progressListener(progressPercentage, exportingPhase) {
