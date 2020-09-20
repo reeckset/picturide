@@ -5,6 +5,7 @@ import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart
 import 'package:picturide/controller/ffmpeg_build/project_previewer.dart';
 import 'package:picturide/model/audio_track.dart';
 import 'package:picturide/model/clip.dart';
+import 'package:picturide/model/output_preferences.dart';
 import 'package:picturide/model/project.dart';
 import 'package:picturide/controller/ffmpeg_build/project_exporter.dart';
 
@@ -48,7 +49,7 @@ void main() {
         AudioTrack(filePath: 'test/assets/audio1.mp3', bpm: 140, sourceDuration: 5.0),
         AudioTrack(filePath: 'test/assets/audio1.mp3', bpm: 140, sourceDuration: 1000.0)
       ],
-      outputResolution: {'w': 1920, 'h': 1080},
+      outputPreferences: OutputPreferences.create(),
     );
 
     FFMPEGStream.flutterFFprobe = FlutterFFprobeMock();
@@ -73,7 +74,7 @@ void main() {
         ..checkDuration(11.9)
         ..checkAVDurationMatch()
         ..checkFrameRate(30)
-        ..checkResolution(defaultProject.outputResolution);
+        ..checkResolution(defaultProject.outputPreferences.resolution);
     },
   timeout: Timeout(Duration(seconds: 40)));
 
