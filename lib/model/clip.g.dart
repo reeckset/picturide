@@ -13,6 +13,7 @@ Clip _$ClipFromJson(Map<String, dynamic> json) {
     startTimestamp: (json['startTimestamp'] as num)?.toDouble(),
     sourceDuration: (json['sourceDuration'] as num)?.toDouble(),
     volume: (json['volume'] as num)?.toDouble() ?? 1.0,
+    fillFrame: json['fillFrame'] as bool ?? true,
   );
 }
 
@@ -22,4 +23,5 @@ Map<String, dynamic> _$ClipToJson(Clip instance) => <String, dynamic>{
       'filePath': instance.filePath,
       'sourceDuration': instance.sourceDuration,
       'volume': instance.volume,
+      'fillFrame': instance.fillFrame,
     };
