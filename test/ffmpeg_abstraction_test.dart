@@ -65,6 +65,25 @@ void main() {
 
       compareFinalArguments(args, expectedOutput);
     });
+
+  test('Fit to resolution - fill frame',
+    () async {
+
+      final List<String> args = await OutputToFileStream('outputdeteste.mp4',
+        FitToResolutionFilterStream(
+          await SourceFileStream.importAsync(
+            InputFile('test/assets/video1.mp4'),
+          ),
+          1920,
+          1080,
+          fillFrame: true
+        )
+      ).build();
+
+      final expectedOutput = ['-i', 'test/assets/video1.mp4', '-filter_complex', '[0:v]scale=1920:1080:force_original_aspect_ratio=increase,setsar=1,crop=1920:1080:(ow-iw)/2:(oh-ih)/2,setpts=PTS-STARTPTS[0:v-fit1920x1080]', '-map', '[0:v-fit1920x1080]', '-map', '0:a', 'outputdeteste.mp4'];
+
+      compareFinalArguments(args, expectedOutput);
+    });
   
   test('Concatenate',
     () async {
