@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -16,6 +19,7 @@ class EditClipPage extends StatefulWidget {
 
 class EditClipPageState extends State<EditClipPage> {
   final IjkMediaController controller = IjkMediaController();
+  final _scrollController = ScrollController();
   List<Clip> clipsToAdd = [];
 
   _submit(context){
@@ -25,9 +29,21 @@ class EditClipPageState extends State<EditClipPage> {
     });
   }
 
+  _scrollToBottom(){
+    Timer(Duration(milliseconds: 100),() {
+      try {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300), curve: Curves.fastOutSlowIn
+        );
+      } catch (e) {}
+    });
+  }
+
   _addClip(){
     this.setState((){
       this.clipsToAdd.add(widget.originalClip);
+      this._scrollToBottom();
     });
   }
 
@@ -64,6 +80,7 @@ class EditClipPageState extends State<EditClipPage> {
               _separatorText('Clips:'),
               Expanded(
                 child: ListView(
+                  controller: _scrollController,
                   children: <Widget>[...clipsToAdd.asMap().entries.map(
                     (entry) => EditClip(
                       entry.value, controller,

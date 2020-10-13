@@ -76,7 +76,8 @@ abstract class FfmpegProjectRunner {
             loop: true,
             startTimeSeconds: clip.startTimestamp,
           )
-        ), outputResolution['w'], outputResolution['h']
+        ), outputResolution['w'], outputResolution['h'],
+        fillFrame: clip.fillFrame
       );
 
     if(!stream.hasAudioStream()){

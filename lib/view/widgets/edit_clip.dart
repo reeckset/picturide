@@ -24,6 +24,7 @@ class EditClipState extends State<EditClip> {
 
   double startTimestamp = 0.0;
   double volume = 1;
+  bool fillFrame = true;
 
   _generateNewClip() async {
     final VideoInfo fileInfo = await _getController().getVideoInfo();
@@ -31,6 +32,7 @@ class EditClipState extends State<EditClip> {
     editedClip.startTimestamp = startTimestamp;
     editedClip.sourceDuration = fileInfo.duration;
     editedClip.volume = volume;
+    editedClip.fillFrame = fillFrame;
     return editedClip;
   }
 
@@ -48,6 +50,7 @@ class EditClipState extends State<EditClip> {
     this.setState(() {
       this.startTimestamp = widget.originalClip.startTimestamp;
       this.volume = widget.originalClip.volume;
+      this.fillFrame = widget.originalClip.fillFrame;
     });
     this._setStart(position: widget.originalClip.startTimestamp);
   }
@@ -117,6 +120,7 @@ class EditClipState extends State<EditClip> {
   List<Widget> _editingControls() => [
     _startControls(),
     _volumeControls(),
+    _transformControls(),
   ];
 
   _startControls(){
@@ -155,7 +159,20 @@ class EditClipState extends State<EditClip> {
         ),
       ]));
 
-  
+  _transformControls() =>
+    ExpansionTile(
+      tilePadding: EdgeInsets.symmetric(horizontal: 30.0),
+      childrenPadding: EdgeInsets.symmetric(horizontal: 40.0),
+      title: Text('Transform Controls'),
+      children: [
+        ListTile(
+          leading: Icon(fillFrame ? Icons.fullscreen : Icons.fullscreen_exit),
+          title: Text(fillFrame ? 'Filling frame' : 'Fitting frame'),
+          onTap: () => setState((){fillFrame = !fillFrame;})
+        ),
+      ],
+      initiallyExpanded: false,
+    );
 
   _buildStartThumbnail(){
     return FutureBuilder(
