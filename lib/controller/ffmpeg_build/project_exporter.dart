@@ -8,6 +8,7 @@ import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_stre
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/mix_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/concat_input_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/null_audio_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/add_output_properties_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/output_to_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_project_runner.dart';
@@ -82,8 +83,9 @@ class ProjectExporter extends FfmpegProjectRunner {
       _getFinalOutputPath(),
       AddOutputPropertiesStream(
         ['-c:v', 'libx264', '-crf', '18', ..._getOutputArgs()],
-        MixAudioFilterStream([
-          FormatAudioFilterStream(
+        FormatAudioFilterStream(
+          MixAudioFilterStream([
+            NullAudioStream(project.getDuration()),
             await ConcatInputStream.importAsync(
               mapActiveClips<InputFile>((i, clip, timeInfo) =>
                 InputFile(
@@ -91,10 +93,10 @@ class ProjectExporter extends FfmpegProjectRunner {
                   durationSeconds: clipsTimeInfo[i].duration
                 )
               )
-            )
-          ),
-          await getAudioTracksStream()
-        ]),
+            ),
+            await getAudioTracksStream(),
+          ]),
+        ),
       ),
       replace: true
     );

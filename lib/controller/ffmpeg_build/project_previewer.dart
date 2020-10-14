@@ -1,7 +1,6 @@
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
+import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/format_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/mix_audio_filter_stream.dart';
-import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
-import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/source_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/add_output_properties_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/output_streams/output_to_file_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
@@ -24,10 +23,12 @@ class ProjectPreviewer extends FfmpegProjectRunner {
   @override
   run() async {    
     final FFMPEGStream filters = 
-      MixAudioFilterStream([
-        await _getClipsStream(),
-        await getAudioTracksStream()
-      ]);
+      FormatAudioFilterStream(
+        MixAudioFilterStream([
+          await _getClipsStream(),
+          await getAudioTracksStream()
+        ])
+      );
 
     final FFMPEGStream output = OutputToFileStream(
       this.outputPath,
