@@ -11,6 +11,8 @@ import 'package:picturide/view/widgets/modals/ask_confirm.dart';
 import 'package:picturide/redux/state/app_state.dart';
 import 'package:picturide/view/widgets/modals/ask_options.dart';
 import 'package:picturide/view/widgets/modals/output_preferences_dialog.dart';
+import 'package:screen/screen.dart';
+
 
 class ExportPage extends StatefulWidget {
   @override
@@ -27,6 +29,7 @@ class _ExportPageState extends State<ExportPage> {
   @override
   void initState() {
     super.initState();
+    Screen.keepOn(true);
     Future(() async {
       try {
         await _preExportOutputPreferencesCheck();
@@ -39,7 +42,10 @@ class _ExportPageState extends State<ExportPage> {
       ProjectExporter(_getProject(), _flutterFFmpeg,
         progressListener: _progressListener)
         .run()
-        .then((_){ setState((){this.hasFinished = true;});})
+        .then((_){ setState((){
+          Screen.keepOn(false);
+          this.hasFinished = true;
+        });})
         .catchError((_){});
     });
   }
@@ -91,6 +97,7 @@ class _ExportPageState extends State<ExportPage> {
       onWillPop: () async {
         if(await askUserConfirm('Do you want to cancel the export?', context)){
           _flutterFFmpeg.cancel();
+          Screen.keepOn(false);
           return true;
         } else {
           return false;

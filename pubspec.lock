@@ -543,6 +543,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.0"
+  screen:
+    dependency: "direct main"
+    description:
+      name: screen
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.5"
   shelf:
     dependency: transitive
     description:
