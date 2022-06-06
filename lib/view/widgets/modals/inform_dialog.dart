@@ -10,7 +10,7 @@ informDialog(String title, String msg, BuildContext context) async {
           content: Text(msg),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
-            FlatButton(
+            TextButton(
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop();

@@ -74,7 +74,7 @@ class HomePageState extends State<HomePage> {
           (entry) => 
             Row(
               children: [
-                RaisedButton(
+                ElevatedButton(
                   child: Text(entry.value),
                   onPressed: () => _openProject(entry.key),
                 ),

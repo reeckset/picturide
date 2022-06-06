@@ -27,8 +27,10 @@ class _EditingTimelinesState extends State<EditingTimelines> {
   _askAudioTrack(context) async => Navigator.of(context).pushNamed('/add_audio_page');
 
   _addVideoClip(context) {
+    print('Adding video clip');
     askVideoFiles().then((List<String> paths) async {
       for(String path in paths){
+        print(path);
         final clips = await _getEditedClips(context, Clip(filePath: path));
         if(clips != null){
           for(var clip in clips){

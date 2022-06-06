@@ -1,3 +1,4 @@
+import 'package:ffmpeg_kit_flutter/stream_information.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_file.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/input_stream.dart';
 
@@ -8,16 +9,16 @@ class SourceFileStream extends InputStream {
   static importAsync(InputFile sourceFile) async =>
     SourceFileStream.fromStreamsInfo(
       sourceFile,
-      (await InputStream.getFileInfo(sourceFile.file))['streams']
+      (await InputStream.getFileInfo(sourceFile.file)).getStreams()
     );
 
   SourceFileStream.fromStreamsInfo(
     this.sourceFile,
-    this.streamsInfo
+    List<StreamInformation> this.streamsInfo
   ){
     streamsInfo.forEach((streamInfo) { 
-      hasVideo = hasVideo || streamInfo['type'] == 'video';
-      hasAudio = hasAudio || streamInfo['type'] == 'audio';
+      hasVideo = hasVideo || (streamInfo as StreamInformation).getType() == 'video';
+      hasAudio = hasAudio || (streamInfo as StreamInformation).getType() == 'audio';
     });
   }
 

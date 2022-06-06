@@ -13,13 +13,13 @@ outputPreferencesDialog(Project project, BuildContext context) async {
           content: _OutputPreferencesSelector(project, (o) => result = o),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
-            FlatButton(
+            TextButton(
               child: Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
-            FlatButton(
+            TextButton(
               child: Text('Cancel'),
               onPressed: () {
                 result = null;

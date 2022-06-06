@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/audio_volume_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/fit_to_resolution_filter_stream.dart';
@@ -23,7 +23,7 @@ abstract class FfmpegProjectRunner {
   final Project project;
   Map<int, ClipTimeInfo> clipsTimeInfo;
   Map<String, int> outputResolution;
-  final FlutterFFmpeg ffmpegController;
+  final FFmpegKit ffmpegController;
 
   FfmpegProjectRunner(
     this.project,

@@ -19,7 +19,7 @@ void main() {
 
       await tester.pumpWidget(makeTestableWidgetRedux(homePage));
 
-      expect(find.byType(RaisedButton) ,findsNothing);
+      expect(find.byType(ElevatedButton) ,findsNothing);
       expect(find.byIcon(Icons.delete), findsNothing);
 
       await tester.tap(find.byIcon(Icons.add));

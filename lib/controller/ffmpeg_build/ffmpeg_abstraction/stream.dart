@@ -1,4 +1,3 @@
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/labels/ffmpeg_label.dart';
 
@@ -8,7 +7,6 @@ abstract class FFMPEGStream {
 
   FFMPEGStream({this.sourceStream});
 
-  static FlutterFFprobe flutterFFprobe = FlutterFFprobe();
   static String forceTmpDirectory;
 
   Future<List<String>> build() async {

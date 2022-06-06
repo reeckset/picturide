@@ -13,7 +13,7 @@ askTextInput(String msg, BuildContext context) async {
           ),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
-            FlatButton(
+            TextButton(
               child: Text('Done'),
               onPressed: () {
                 Navigator.of(context).pop();

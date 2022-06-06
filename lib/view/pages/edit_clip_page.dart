@@ -1,8 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/clip.dart';
@@ -18,15 +17,15 @@ class EditClipPage extends StatefulWidget {
 }
 
 class EditClipPageState extends State<EditClipPage> {
-  final IjkMediaController controller = IjkMediaController();
+  final BetterPlayerController controller = BetterPlayerController(
+    BetterPlayerConfiguration()
+  );
   final _scrollController = ScrollController();
   List<Clip> clipsToAdd = [];
 
   _submit(context){
-    controller.getVideoInfo().then((VideoInfo fileInfo){
-      controller.stop();
+      controller.dispose();
       Navigator.pop(context, clipsToAdd);
-    });
   }
 
   _scrollToBottom(){
@@ -56,8 +55,9 @@ class EditClipPageState extends State<EditClipPage> {
   @override
   void initState() {
     super.initState();
-    controller.setNetworkDataSource(
-      widget.originalClip.filePath, autoPlay: true);
+    controller.setupDataSource(BetterPlayerDataSource.file(
+      widget.originalClip.filePath
+    ));
     _addClip();
   }
 
@@ -65,7 +65,7 @@ class EditClipPageState extends State<EditClipPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        controller.stop();
+        controller.dispose();
         return true;
       },
       child: Scaffold(
@@ -87,13 +87,13 @@ class EditClipPageState extends State<EditClipPage> {
                       onChange: (newClip) => _onClipChange(newClip, entry.key)
                     )
                   ).toList(),
-                  FlatButton(
+                  TextButton(
                     child: Text('Add another clip from this file'),
                     onPressed: _addClip,),
                   ],
                 ),
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Done'),
                 onPressed: () => _submit(context),
               )
@@ -116,8 +116,8 @@ class EditClipPageState extends State<EditClipPage> {
     return Container(
       height:  mediaQuery.size.width / StoreProvider
         .of<AppState>(context).state.history.project.getAspectRatio(),
-      child: IjkPlayer(
-        mediaController: controller,
+      child: BetterPlayer(
+        controller: controller,
       ),);
   }
 }

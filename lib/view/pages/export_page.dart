@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:picturide/controller/ffmpeg_build/project_exporter.dart';
 import 'package:picturide/model/output_preferences.dart';
@@ -19,7 +18,7 @@ class ExportPage extends StatefulWidget {
 
 class _ExportPageState extends State<ExportPage> {
 
-  final FlutterFFmpeg _flutterFFmpeg = FlutterFFmpeg();
+  final FFmpegKit _flutterFFmpeg = FFmpegKit();
   double progress = 0;
   String exportingPhase = '';
   bool hasFinished = false;
@@ -90,7 +89,7 @@ class _ExportPageState extends State<ExportPage> {
     return WillPopScope(
       onWillPop: () async {
         if(await askUserConfirm('Do you want to cancel the export?', context)){
-          _flutterFFmpeg.cancel();
+          FFmpegKit.cancel();
           return true;
         } else {
           return false;
@@ -104,7 +103,7 @@ class _ExportPageState extends State<ExportPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Export finished!'),
-                  RaisedButton(
+                  ElevatedButton(
                     child: Text('Go back to project!'),
                     onPressed: ()=>Navigator.of(context).pop(),
                   ),

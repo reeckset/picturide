@@ -11,14 +11,14 @@ askUserConfirm(String msg, BuildContext context) async {
           content: Text(msg),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
-            FlatButton(
+            TextButton(
               child: Text('No'),
               onPressed: () {
                 result = false;
                 Navigator.of(context).pop();
               },
             ),
-            FlatButton(
+            TextButton(
               child: Text('Yes'),
               onPressed: () {
                 result = true;

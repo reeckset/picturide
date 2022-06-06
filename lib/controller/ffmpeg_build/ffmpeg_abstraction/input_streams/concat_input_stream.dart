@@ -11,7 +11,7 @@ class ConcatInputStream extends InputStream {
   static importAsync(List<InputFile> sourceFiles) async =>
     ConcatInputStream.fromStreamsInfo(
       sourceFiles,
-      (await InputStream.getFileInfo(sourceFiles[0].file))['streams']
+      (await InputStream.getFileInfo(sourceFiles[0].file)).getStreams()
     );
 
   ConcatInputStream.fromStreamsInfo(

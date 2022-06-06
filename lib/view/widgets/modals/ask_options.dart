@@ -14,7 +14,7 @@ Future<int> askOptions(
           title: Text(title),
           content: Text(msg),
           actions: options.asMap().entries.map(
-            (entry) => FlatButton(
+            (entry) => TextButton(
               child: Text(entry.value),
               onPressed: () {
                 Navigator.of(context).pop(entry.key);

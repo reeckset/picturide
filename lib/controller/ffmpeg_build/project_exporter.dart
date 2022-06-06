@@ -1,9 +1,10 @@
 import 'dart:io';
 
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter/statistics.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/format_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/mix_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/input_streams/concat_input_stream.dart';
@@ -17,7 +18,6 @@ import 'package:picturide/model/clip_time_info.dart';
 
 class ProjectExporter extends FfmpegProjectRunner {
 
-  final FlutterFFmpegConfig _flutterFFmpegConfig;
   String tmpDir;
   String _finalOutputPath;
   Function progressListener;
@@ -26,9 +26,7 @@ class ProjectExporter extends FfmpegProjectRunner {
   int framesInPhase = 0;
 
   ProjectExporter(project, ffmpegController, {this.progressListener})
-    : _flutterFFmpegConfig = (
-      progressListener != null ? FlutterFFmpegConfig() : null),
-    super(project, ffmpegController);
+    : super(project, ffmpegController);
 
   @override
   Map<String, int> getOutputResolution() =>
@@ -73,7 +71,7 @@ class ProjectExporter extends FfmpegProjectRunner {
 
     _setPhaseExportClip(i, timeInfo);
 
-    await ffmpegController.executeWithArguments(await stream.build());
+    await FFmpegKit.executeWithArguments(await stream.build());
   }
 
   _compileAndExportClipsWithAudio() async {
@@ -101,7 +99,7 @@ class ProjectExporter extends FfmpegProjectRunner {
       replace: true
     );
 
-    await ffmpegController.executeWithArguments(await stream.build());
+    await FFmpegKit.executeWithArguments(await stream.build());
   }
 
   _getFinalOutputPath() {
@@ -121,23 +119,17 @@ class ProjectExporter extends FfmpegProjectRunner {
   _registerProgressListener() {
     if(this.progressListener == null) return;
 
-    _flutterFFmpegConfig.enableStatisticsCallback(
-      (int time,
-      int size,
-      double bitrate,
-      double speed,
-      int videoFrameNumber,
-      double videoQuality,
-      double videoFps){
+    FFmpegKitConfig.enableStatisticsCallback(
+      (Statistics statistics){
         this.progressListener(
-          videoFrameNumber/this.framesInPhase,
+          statistics.getVideoFrameNumber()/this.framesInPhase,
           phase
         );
     });
   }
 
   _removeProgressListener() {
-    _flutterFFmpegConfig?.disableStatistics();
+    FFmpegKitConfig.disableStatistics();
   }
 
   _setPhaseExportClip(int i, ClipTimeInfo timeInfo){

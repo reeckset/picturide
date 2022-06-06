@@ -1,6 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
+import 'package:better_player/better_player.dart';
 import 'package:path/path.dart';
 import 'package:picturide/model/audio_track.dart';
 
@@ -12,14 +12,18 @@ class AddAudioPage extends StatefulWidget {
 }
 
 class AddAudioPageState extends State<AddAudioPage> {
-  final IjkMediaController _controller = IjkMediaController();
+  final BetterPlayerController _controller = BetterPlayerController(
+    BetterPlayerConfiguration(
+      aspectRatio: 16 / 9,
+      fit: BoxFit.contain,
+  ));
   String filepath;
   int bpm = 0;
   int beatCount = 0;
   int firstTimestamp = 0;
   bool unsuccessfulFileSelection = false;
 
-  getAudioFile() async => (await FilePicker.getFile(type: FileType.audio)).path;
+  getAudioFile() async => (await FilePicker.platform.pickFiles(type: FileType.audio)).files[0].path;
 
   _registerTap(){
     final beatCount = this.beatCount+1;
@@ -44,22 +48,23 @@ class AddAudioPageState extends State<AddAudioPage> {
   }
 
   _submit(context){
-    _controller.getVideoInfo().then((fileInfo){
-      _controller.stop();
-      Navigator.pop(context, 
-        AudioTrack(
-          filePath: this.filepath,
-          bpm: this.bpm,
-          sourceDuration: fileInfo.duration
-        ));
-    }); 
+    final double duration = _controller.betterPlayerDataSource
+      .overriddenDuration.inMilliseconds / 1000.0;
+    _controller.dispose();
+    Navigator.pop(context, 
+      AudioTrack(
+        filePath: this.filepath,
+        bpm: this.bpm,
+        sourceDuration: duration
+      ));
   }
 
   @override
   void initState() {
     super.initState();
     getAudioFile().then((filepath){
-      _controller.setNetworkDataSource(filepath, autoPlay: true);
+      _controller.setupDataSource(BetterPlayerDataSource(
+        BetterPlayerDataSourceType.network, filepath));
       this.setState((){ this.filepath = filepath; });
     }).catchError((_){
       this.setState((){
@@ -75,7 +80,7 @@ class AddAudioPageState extends State<AddAudioPage> {
     }
     return WillPopScope(
       onWillPop: () async {
-        _controller.stop();
+        _controller.dispose();
         return true;
       },
       child: Scaffold(
@@ -83,8 +88,8 @@ class AddAudioPageState extends State<AddAudioPage> {
         body: this.filepath != null ? Column(children: [
               Container(
                 height: 50,
-                child: IjkPlayer(
-                  mediaController: _controller,
+                child: BetterPlayer(
+                  controller: _controller,
                 ),),
               Text(basename(filepath)),
               Container(
@@ -93,7 +98,7 @@ class AddAudioPageState extends State<AddAudioPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      RaisedButton(
+                      ElevatedButton(
                         child: Text('Tap to the tempo'),
                         onPressed: _registerTap,
                       ),
@@ -105,7 +110,7 @@ class AddAudioPageState extends State<AddAudioPage> {
                     ],
                   )
               ),
-              RaisedButton(
+              ElevatedButton(
                 child: Text('Add this song!'),
                 onPressed: bpm == 0 ? null : () => _submit(context),
               )

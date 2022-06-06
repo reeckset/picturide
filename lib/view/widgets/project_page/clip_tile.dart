@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:memoize/memoize.dart';
@@ -152,9 +151,8 @@ class ClipTileState extends State<ClipTile> with AutomaticKeepAliveClientMixin {
      return ButtonTheme(
         minWidth: 36.0,
         height: 36.0,
-        child: OutlineButton(
+        child: OutlinedButton(
           child: Text(widget.clip.getTempoDurationText()),
-          padding: EdgeInsets.zero,
           onPressed: () => _incrementClipTempo(context, widget.index)
         )
       );

@@ -1,3 +1,4 @@
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/concatenate_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/format_audio_filter_stream.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/filter_streams/mix_audio_filter_stream.dart';
@@ -41,7 +42,7 @@ class ProjectPreviewer extends FfmpegProjectRunner {
     final args = await output.build();
 
     // for debugging: args.forEach((a) => a.split('\n').forEach((b)=>print(b)));
-    return ffmpegController.executeWithArguments(args);
+    return FFmpegKit.executeWithArguments(args);
   }
 
   _getClipsStream() async {

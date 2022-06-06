@@ -1,3 +1,5 @@
+import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter/media_information.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/labels/ffmpeg_input_label.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/labels/ffmpeg_label.dart';
 import 'package:picturide/controller/ffmpeg_build/ffmpeg_abstraction/stream.dart';
@@ -28,6 +30,6 @@ abstract class InputStream extends FFMPEGStream {
   FFMPEGLabel getVideoStreamLabel() =>
     hasVideo ? FFMPEGInputLabel('$inputIndex:v') : null;
 
-  static Future<Map<dynamic, dynamic>> getFileInfo(filePath) async => 
-    await FFMPEGStream.flutterFFprobe.getMediaInformation(filePath);
+  static Future<MediaInformation> getFileInfo(filePath) async => 
+    (await FFprobeKit.getMediaInformation(filePath)).getMediaInformation();
 }

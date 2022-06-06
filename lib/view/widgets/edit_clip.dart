@@ -1,17 +1,17 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_ijkplayer/flutter_ijkplayer.dart';
+import 'package:better_player/better_player.dart';
 import 'package:picturide/model/clip.dart';
 import 'package:picturide/view/theme.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 class EditClip extends StatefulWidget {
   final Clip originalClip;
-  final IjkMediaController playerController;
+  final BetterPlayerController playerController;
   final Function onChange;
   EditClip(
     this.originalClip,
-    IjkMediaController this.playerController,
+    BetterPlayerController this.playerController,
   { this.onChange, Key key}) : super(key: key);
 
   @override
@@ -27,10 +27,10 @@ class EditClipState extends State<EditClip> {
   bool fillFrame = true;
 
   _generateNewClip() async {
-    final VideoInfo fileInfo = await _getController().getVideoInfo();
+    final Duration duration = _getController().playerController.betterPlayerDataSource.overriddenDuration;
     final Clip editedClip = Clip.fromClip(widget.originalClip);
     editedClip.startTimestamp = startTimestamp;
-    editedClip.sourceDuration = fileInfo.duration;
+    editedClip.sourceDuration = duration.inMilliseconds / 1000.0;
     editedClip.volume = volume;
     editedClip.fillFrame = fillFrame;
     return editedClip;
@@ -55,9 +55,10 @@ class EditClipState extends State<EditClip> {
     this._setStart(position: widget.originalClip.startTimestamp);
   }
 
-  _setStart({double position}){
+  _setStart({double position}) async {
     position = position == null
-      ? _getController().videoInfo.currentPosition
+      ? (await _getController().videoPlayerController.absolutePosition)
+        .millisecond / 1000.0
       : position;
     this.setState(() {startTimestamp = position; });
   }
@@ -131,12 +132,12 @@ class EditClipState extends State<EditClip> {
           icon: Icon(Icons.arrow_left),
           onPressed: ()=>_scrub(forward:false),
         ),
-        FlatButton(
-          padding: EdgeInsets.all(10.0),
+        TextButton(
+          //padding: EdgeInsets.all(10.0),
           child: Text('Go to clip start'),
           onPressed: () => _getController().seekTo(this.startTimestamp),
         ),
-        RaisedButton(child: Text('Set start'), onPressed: _setStart,),
+        ElevatedButton(child: Text('Set start'), onPressed: _setStart,),
         IconButton(icon: Icon(Icons.arrow_right), onPressed: _scrub,),
       ]
     ,);
